@@ -1,0 +1,403 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrgRole {
+  ADMIN
+  PM
+  MEMBER
+  VIEWER
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  DONE
+}
+
+enum IssueType {
+  EPIC
+  STORY
+  TASK
+  BUG
+  SUBTASK
+}
+
+enum TaskSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum TaskStatus {
+  BACKLOG
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  BLOCKED
+  DONE
+}
+
+enum SprintStatus {
+  PLANNED
+  ACTIVE
+  CLOSED
+}
+
+enum DependencyType {
+  FS
+}
+
+enum ActivityAction {
+  CREATED
+  UPDATED
+  COMMENTED
+  STATUS_CHANGED
+  ASSIGNED
+  SPRINT_CHANGED
+  GITHUB_PR_MERGED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String?
+  email        String   @unique
+  passwordHash String
+  image        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships      OrgMember[]
+  ownedProjects    Project[]           @relation("ProjectOwner")
+  projectMembers   ProjectMember[]
+  assignedTasks    Task[]              @relation("TaskAssignee")
+  createdTasks     Task[]              @relation("TaskCreator")
+  comments         Comment[]
+  activities       Activity[]
+  watchedTasks     TaskWatcher[]
+  accounts         Account[]
+  sessions         Session[]
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members          OrgMember[]
+  projects         Project[]
+  githubConnection GithubConnection?
+}
+
+model GithubConnection {
+  id             String   @id @default(cuid())
+  organizationId String   @unique
+  accessToken    String
+  tokenType      String   @default("bearer")
+  scope          String?
+  githubUserId   String?
+  githubLogin    String?
+  connectedById  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model OrgMember {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  role           OrgRole  @default(MEMBER)
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model Project {
+  id                  String        @id @default(cuid())
+  organizationId      String
+  name                String
+  key                 String
+  description         String?
+  status              ProjectStatus @default(PLANNING)
+  startDate           DateTime
+  deadline            DateTime
+  ownerId             String
+  issueCounter        Int           @default(0)
+  /// GitHub "owner/repo" e.g. acme/website
+  githubRepo          String?
+  githubWebhookSecret String?
+  githubWebhookId     Int?
+  autoCloseOnPrMerge  Boolean       @default(true)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  owner        User            @relation("ProjectOwner", fields: [ownerId], references: [id])
+  members      ProjectMember[]
+  tasks        Task[]
+  sprints      Sprint[]
+  labels       Label[]
+  components   Component[]
+  versions     Version[]
+
+  @@unique([organizationId, key])
+  @@index([organizationId])
+  @@index([ownerId])
+  @@index([githubRepo])
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model Sprint {
+  id        String       @id @default(cuid())
+  projectId String
+  name      String
+  goal      String?
+  status    SprintStatus @default(PLANNED)
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  @@index([projectId])
+}
+
+model Label {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  color     String   @default("#6366f1")
+  createdAt DateTime @default(now())
+
+  project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   TaskLabel[]
+
+  @@unique([projectId, name])
+}
+
+model Component {
+  id          String   @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  project Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   TaskComponent[]
+
+  @@unique([projectId, name])
+}
+
+model Version {
+  id          String    @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  releaseDate DateTime?
+  released    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  project  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fixTasks Task[]  @relation("FixVersion")
+
+  @@unique([projectId, name])
+}
+
+model Task {
+  id               String       @id @default(cuid())
+  projectId        String
+  issueKey         String
+  title            String
+  description      String?
+  issueType        IssueType    @default(TASK)
+  severity         TaskSeverity @default(MEDIUM)
+  status           TaskStatus   @default(BACKLOG)
+  durationDays     Float        @default(1)
+  storyPoints      Float?
+  originalEstimate Float?
+  timeSpent        Float?       @default(0)
+  isMilestone      Boolean      @default(false)
+  environment      String?
+  dueDate          DateTime?
+  assigneeId       String?
+  createdById      String
+  epicId           String?
+  parentId         String?
+  sprintId         String?
+  fixVersionId     String?
+  githubPrUrl      String?
+  githubPrNumber   Int?
+  plannedStart     DateTime?
+  plannedEnd       DateTime?
+  earlyStart       DateTime?
+  earlyFinish      DateTime?
+  lateStart        DateTime?
+  lateFinish       DateTime?
+  slackDays        Float?
+  isCritical       Boolean      @default(false)
+  sortOrder        Int          @default(0)
+  boardOrder       Int          @default(0)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee     User?            @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  createdBy    User             @relation("TaskCreator", fields: [createdById], references: [id])
+  epic         Task?            @relation("EpicChildren", fields: [epicId], references: [id])
+  epicChildren Task[]           @relation("EpicChildren")
+  parent       Task?            @relation("Subtasks", fields: [parentId], references: [id])
+  subtasks     Task[]           @relation("Subtasks")
+  sprint       Sprint?          @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  fixVersion   Version?         @relation("FixVersion", fields: [fixVersionId], references: [id], onDelete: SetNull)
+  predecessors TaskDependency[] @relation("Successor")
+  successors   TaskDependency[] @relation("Predecessor")
+  comments     Comment[]
+  labels       TaskLabel[]
+  components   TaskComponent[]
+  watchers     TaskWatcher[]
+  activities   Activity[]
+
+  @@unique([projectId, issueKey])
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([severity])
+  @@index([status])
+  @@index([issueType])
+  @@index([sprintId])
+  @@index([epicId])
+}
+
+model TaskLabel {
+  taskId  String
+  labelId String
+
+  task  Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, labelId])
+}
+
+model TaskComponent {
+  taskId      String
+  componentId String
+
+  task      Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  component Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, componentId])
+}
+
+model TaskWatcher {
+  taskId String
+  userId String
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, userId])
+}
+
+model TaskDependency {
+  id            String         @id @default(cuid())
+  predecessorId String
+  successorId   String
+  type          DependencyType @default(FS)
+
+  predecessor Task @relation("Predecessor", fields: [predecessorId], references: [id], onDelete: Cascade)
+  successor   Task @relation("Successor", fields: [successorId], references: [id], onDelete: Cascade)
+
+  @@unique([predecessorId, successorId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  taskId    String
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+model Activity {
+  id        String         @id @default(cuid())
+  taskId    String
+  actorId   String
+  action    ActivityAction
+  field     String?
+  fromValue String?
+  toValue   String?
+  message   String?
+  createdAt DateTime       @default(now())
+
+  task  Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  actor User @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
