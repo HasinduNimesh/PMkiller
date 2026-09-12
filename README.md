@@ -129,6 +129,32 @@ DATABASE_URL="your-neon-url-with-params" pnpm db:push
 | Wrong / stale password | Reset role password in Neon, update Vercel, redeploy |
 | Schema never applied | Run `pnpm db:push` with the Neon `DATABASE_URL` |
 
+## MCP (Cursor / agents)
+
+ProjManager exposes a **scrum API** at `/api/v1/*` plus a **stdio MCP server** so agents can plan sprints, create/assign issues, and move work.
+
+### 1. Server env (Vercel or local)
+
+| Variable | Purpose |
+|----------|---------|
+| `MCP_API_KEY` | Shared bearer secret (`openssl rand -base64 32`) |
+| `MCP_ACT_AS_EMAIL` | Org user the MCP acts as (e.g. `admin@acme.test`) |
+
+### 2. Cursor MCP config
+
+Copy `mcp/cursor.mcp.example.json` into your Cursor MCP settings (or project `.cursor/mcp.json`) and set:
+
+- `PROJMANAGER_URL` → `https://pmkiller.vercel.app` (or `http://localhost:3000`)
+- `MCP_API_KEY` → same as server
+- `MCP_ACT_AS_EMAIL` → your org member email
+- `cwd` → this repo path
+
+### 3. Tools
+
+`list_projects`, `list_issues`, `create_issue`, `update_issue`, `list_sprints`, `create_sprint`, `start_sprint`, `complete_sprint`, `my_work`, plus prompt `plan_sprint`.
+
+Example: *“Plan Sprint 2 for WEB at 20 points, assign bugs to member@acme.test, then start the sprint.”*
+
 ## CPM notes
 
 - Dependencies are **finish-to-start (FS)**.
@@ -144,4 +170,5 @@ DATABASE_URL="your-neon-url-with-params" pnpm db:push
 | `pnpm build` | Production build |
 | `pnpm test` | CPM unit tests |
 | `pnpm db:seed` | Demo data |
+| `pnpm mcp` | Run ProjManager MCP server (stdio) |
 | `pnpm db:studio` | Prisma Studio |

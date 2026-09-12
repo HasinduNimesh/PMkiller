@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "projmanager": {
+      "command": "pnpm",
+      "args": ["exec", "tsx", "mcp/server.ts"],
+      "cwd": "/home/hasindu/personal-repo/Proj-Manager",
+      "env": {
+        "PROJMANAGER_URL": "https://pmkiller.vercel.app",
+        "MCP_API_KEY": "replace-with-same-key-as-vercel",
+        "MCP_ACT_AS_EMAIL": "admin@acme.test"
+      }
+    }
+  }
+}

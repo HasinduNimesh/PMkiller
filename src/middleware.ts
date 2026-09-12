@@ -9,7 +9,8 @@ export async function middleware(req: NextRequest) {
   const isPublic =
     publicPaths.some((p) => pathname.startsWith(p)) ||
     pathname.startsWith("/api/auth") ||
-    pathname.startsWith("/api/github/webhook");
+    pathname.startsWith("/api/github/webhook") ||
+    pathname.startsWith("/api/v1");
 
   // On HTTPS (Vercel), Auth.js names the cookie `__Secure-authjs.session-token`.
   // getToken defaults to the non-secure name unless secureCookie is true — that
