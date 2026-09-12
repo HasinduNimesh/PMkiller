@@ -12,6 +12,16 @@ export const registerSchema = z.object({
   organizationName: z.string().min(2),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const resetPasswordSchema = z.object({
+  email: z.string().email(),
+  token: z.string().min(20),
+  password: z.string().min(6),
+});
+
 export const projectSchema = z.object({
   name: z.string().min(2),
   key: z

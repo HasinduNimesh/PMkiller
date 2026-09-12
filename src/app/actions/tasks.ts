@@ -314,6 +314,15 @@ export async function createTaskAction(projectId: string, formData: FormData) {
     message: `Created ${issueKey}`,
   });
 
+  if (assigneeId) {
+    const { notifyIssueAssigned } = await import("@/lib/notify");
+    await notifyIssueAssigned({
+      taskId: task.id,
+      assigneeId,
+      actorId: session.user.id,
+    });
+  }
+
   if (issueType !== "EPIC") await recalculateCpmAction(projectId);
   revalidateProject(projectId);
   return { id: task.id, issueKey };
@@ -394,6 +403,19 @@ export async function updateTaskFieldsAction(taskId: string, formData: FormData)
     action: "UPDATED",
     message: "Updated issue fields",
   });
+
+  const nextAssigneeId =
+    data.assigneeId === undefined ? undefined : (data.assigneeId as string | null);
+  if (typeof nextAssigneeId === "string" && nextAssigneeId !== existing.assigneeId) {
+    const { notifyIssueAssigned } = await import("@/lib/notify");
+    await notifyIssueAssigned({
+      taskId,
+      assigneeId: nextAssigneeId,
+      actorId: session.user.id,
+      previousAssigneeId: existing.assigneeId,
+    });
+  }
+
   revalidateProject(existing.projectId);
   revalidatePath(`/projects/${existing.projectId}/issues/${taskId}`);
   return { ok: true };

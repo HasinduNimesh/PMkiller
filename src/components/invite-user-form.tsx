@@ -52,15 +52,17 @@ export function InviteUserForm() {
             </select>
           </fieldset>
           <fieldset className="fieldset">
-            <legend className="fieldset-legend">Temporary password</legend>
+            <legend className="fieldset-legend">Temporary password (optional)</legend>
             <input
               name="password"
               type="text"
               minLength={6}
-              placeholder="Required for new accounts"
+              placeholder="Auto-generated if blank"
               className="input input-sm w-full"
             />
-            <p className="label text-xs opacity-50">Leave blank when adding an existing account</p>
+            <p className="label text-xs opacity-50">
+              New users get an invite email with a set-password link (Resend).
+            </p>
           </fieldset>
         </div>
 

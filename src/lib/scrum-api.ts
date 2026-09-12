@@ -190,6 +190,15 @@ export async function createIssue(
     },
   });
 
+  if (assigneeId) {
+    const { notifyIssueAssigned } = await import("@/lib/notify");
+    await notifyIssueAssigned({
+      taskId: task.id,
+      assigneeId,
+      actorId: actor.userId,
+    });
+  }
+
   return { issue: task };
 }
 
@@ -239,6 +248,8 @@ export async function updateIssue(
   const nextStatus =
     input.sprintId && existing.status === "BACKLOG" ? ("TODO" as TaskStatus) : input.status;
 
+  const existingAssigneeId = existing.assigneeId;
+
   const task = await prisma.task.update({
     where: { id: existing.id },
     data: {
@@ -267,6 +278,16 @@ export async function updateIssue(
       assignee: { select: { email: true, name: true } },
     },
   });
+
+  if (typeof assigneeId === "string" && assigneeId !== existingAssigneeId) {
+    const { notifyIssueAssigned } = await import("@/lib/notify");
+    await notifyIssueAssigned({
+      taskId: existing.id,
+      assigneeId,
+      actorId: actor.userId,
+      previousAssigneeId: existingAssigneeId,
+    });
+  }
 
   return { issue: task };
 }

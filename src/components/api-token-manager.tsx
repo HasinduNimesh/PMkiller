@@ -121,7 +121,7 @@ export function ApiTokenManager({
               }
               if ("token" in res && res.token) {
                 setFreshToken(res.token);
-                form.reset();
+                if (form.isConnected) form.reset();
               }
             });
           }}

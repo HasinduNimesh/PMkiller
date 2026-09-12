@@ -1,10 +1,13 @@
 "use server";
 
 import { hash } from "bcryptjs";
+import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/session";
 import { wouldRemoveLastAdmin } from "@/lib/org-guards";
+import { appUrl, sendInviteEmail } from "@/lib/email";
+import { createEmailToken } from "@/lib/email-tokens";
 import { z } from "zod";
 
 const inviteSchema = z.object({
@@ -24,11 +27,15 @@ export async function inviteUserAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: "Fill name, valid email, role, and password (min 6 chars)." };
+    return { error: "Fill name, valid email, and role." };
   }
 
   const email = parsed.data.email.toLowerCase();
   const orgId = session.user.organizationId;
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { name: true },
+  });
 
   const existing = await prisma.user.findUnique({ where: { email } });
 
@@ -62,25 +69,38 @@ export async function inviteUserAction(formData: FormData) {
       },
     });
 
+    const { rawToken } = await createEmailToken("password-reset", email);
+    const setupUrl = appUrl(
+      `/reset-password?email=${encodeURIComponent(email)}&token=${encodeURIComponent(rawToken)}`,
+    );
+    await sendInviteEmail({
+      to: email,
+      name: existing.name ?? parsed.data.name,
+      orgName: org?.name ?? "your organization",
+      role: parsed.data.role,
+      invitedBy: session.user.name || session.user.email || "An admin",
+      setupUrl,
+    });
+
     revalidatePath("/admin/users");
     return {
       ok: true,
-      message: `Added existing account ${email} as ${parsed.data.role}.`,
+      message: `Added ${email} as ${parsed.data.role} and emailed an invite.`,
     };
   }
 
-  const password = parsed.data.password;
-  if (!password || password.length < 6) {
-    return { error: "Password is required for new users (min 6 chars)." };
-  }
+  const provided = parsed.data.password?.trim();
+  const tempPassword = provided && provided.length >= 6 ? provided : randomBytes(9).toString("base64url");
+  const passwordHash = await hash(tempPassword, 10);
 
-  const passwordHash = await hash(password, 10);
   await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
         name: parsed.data.name,
         email,
         passwordHash,
+        // Admin-trusted invite — mailbox is confirmed via the setup link email.
+        emailVerified: new Date(),
       },
     });
     await tx.orgMember.create({
@@ -92,10 +112,23 @@ export async function inviteUserAction(formData: FormData) {
     });
   });
 
+  const { rawToken } = await createEmailToken("password-reset", email);
+  const setupUrl = appUrl(
+    `/reset-password?email=${encodeURIComponent(email)}&token=${encodeURIComponent(rawToken)}`,
+  );
+  await sendInviteEmail({
+    to: email,
+    name: parsed.data.name,
+    orgName: org?.name ?? "your organization",
+    role: parsed.data.role,
+    invitedBy: session.user.name || session.user.email || "An admin",
+    setupUrl,
+  });
+
   revalidatePath("/admin/users");
   return {
     ok: true,
-    message: `Created ${email} and added as ${parsed.data.role}. Share the temporary password with them.`,
+    message: `Created ${email} as ${parsed.data.role} and emailed a set-password link.`,
   };
 }
 

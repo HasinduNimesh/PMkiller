@@ -68,6 +68,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (!user) return null;
           const valid = await compare(password, user.passwordHash);
           if (!valid) return null;
+          // Unverified accounts are blocked in loginAction; belt-and-suspenders here.
+          if (!user.emailVerified) return null;
 
           const membership = user.memberships[0];
           if (!membership) return null;

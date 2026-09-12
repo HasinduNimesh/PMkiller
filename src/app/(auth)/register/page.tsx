@@ -20,7 +20,9 @@ export default function RegisterPage() {
     >
       <div>
         <h2 className="font-display text-xl font-semibold tracking-tight">Create organization</h2>
-        <p className="mt-1 text-sm text-base-content/55">You become the Admin for the new org.</p>
+        <p className="mt-1 text-sm text-base-content/55">
+          You become the Admin. We will email a verification link when Resend is configured.
+        </p>
       </div>
 
       <fieldset className="fieldset">

@@ -129,6 +129,31 @@ DATABASE_URL="your-neon-url-with-params" pnpm db:push
 | Wrong / stale password | Reset role password in Neon, update Vercel, redeploy |
 | Schema never applied | Run `pnpm db:push` with the Neon `DATABASE_URL` |
 
+## Email (Resend)
+
+Outbound email uses [Resend](https://resend.com) for:
+
+- Email verification on self-registration
+- Password reset
+- Org invites (set-password link)
+- Issue assignment notifications
+
+Set on Vercel (and locally):
+
+| Variable | Purpose |
+|----------|---------|
+| `RESEND_API_KEY` | Resend API key (`re_…`) |
+| `EMAIL_FROM` | Verified sender, e.g. `ProjManager <noreply@yourdomain.com>` |
+| `AUTH_URL` | Public app URL used in email links |
+
+Without `RESEND_API_KEY`, messages are logged to the server console and new self-signups are auto-verified (local DX).
+
+After adding `emailVerified` to existing production users, mark them verified once:
+
+```sql
+UPDATE "User" SET "emailVerified" = NOW() WHERE "emailVerified" IS NULL;
+```
+
 ## MCP (Cursor / agents)
 
 ProjManager exposes a **scrum API** at `/api/v1/*` plus a **stdio MCP server** so agents can plan sprints, create/assign issues, and move work.

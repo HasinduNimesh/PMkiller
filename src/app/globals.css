@@ -185,6 +185,13 @@
   color: #166534;
 }
 
+.callout-info {
+  border-color: color-mix(in oklab, #1d4ed8 40%, transparent);
+  background: color-mix(in oklab, #eff6ff 92%, var(--color-base-100));
+  color: #1e3a8a;
+  box-shadow: 0 0 24px color-mix(in oklab, #3b82f6 14%, transparent);
+}
+
 .callout-error {
   border-color: color-mix(in oklab, #b91c1c 45%, transparent);
   background: color-mix(in oklab, #fef2f2 92%, var(--color-base-100));
