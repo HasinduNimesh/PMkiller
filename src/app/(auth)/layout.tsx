@@ -3,7 +3,10 @@ import { auth } from "@/auth";
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
-  if (session) redirect("/dashboard");
+  // Must match app layout / middleware — a bare expired session object is still truthy
+  if (session?.user?.id && session.user.organizationId) {
+    redirect("/dashboard");
+  }
 
   return (
     <div className="hero min-h-screen bg-base-200">

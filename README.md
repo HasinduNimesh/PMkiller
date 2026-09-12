@@ -103,10 +103,31 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Deploy (Vercel + Neon)
 
-1. Create a Neon project and copy the pooled connection string into `DATABASE_URL`.
-2. Set `AUTH_SECRET` (`openssl rand -base64 32`) and `AUTH_URL` to your production URL.
-3. Run migrations against Neon (`pnpm db:push` or `prisma migrate deploy`).
-4. Deploy the repo to Vercel; add the same env vars in the project settings.
+1. In Neon → **Connect**, copy the **pooled** URL (`-pooler` in the hostname) into Vercel `DATABASE_URL`.
+2. Make sure the URL ends with (or includes) these query params — Neon cold starts often exceed Prisma’s default 5s:
+
+```text
+?sslmode=require&pgbouncer=true&connect_timeout=15&pool_timeout=15
+```
+
+3. Set `AUTH_SECRET` (`openssl rand -base64 32`) for **Production**.
+4. Optionally set `AUTH_URL` to `https://YOUR_APP.vercel.app`, or leave unset (not `localhost`).
+5. Push schema once from your machine against Neon:
+
+```bash
+DATABASE_URL="your-neon-url-with-params" pnpm db:push
+```
+
+6. **Redeploy** after every env change.
+
+### If logs say `Can't reach database server`
+
+| Check | What to do |
+|-------|------------|
+| Neon project asleep / suspended | Open the Neon console (wakes compute), then retry |
+| Timeouts too short | Add `connect_timeout=15&pool_timeout=15` to `DATABASE_URL` |
+| Wrong / stale password | Reset role password in Neon, update Vercel, redeploy |
+| Schema never applied | Run `pnpm db:push` with the Neon `DATABASE_URL` |
 
 ## CPM notes
 

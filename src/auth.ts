@@ -34,6 +34,8 @@ declare module "next-auth/jwt" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Required on Vercel — MissingSecret → 500 on /api/auth/session
+  secret: process.env.AUTH_SECRET,
   trustHost: true,
   session: { strategy: "jwt" },
   pages: {
@@ -51,33 +53,38 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const password = credentials?.password as string | undefined;
         if (!email || !password) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: email.toLowerCase() },
-          include: {
-            memberships: {
-              include: { organization: true },
-              take: 1,
-              orderBy: { createdAt: "asc" },
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: email.toLowerCase() },
+            include: {
+              memberships: {
+                include: { organization: true },
+                take: 1,
+                orderBy: { createdAt: "asc" },
+              },
             },
-          },
-        });
+          });
 
-        if (!user) return null;
-        const valid = await compare(password, user.passwordHash);
-        if (!valid) return null;
+          if (!user) return null;
+          const valid = await compare(password, user.passwordHash);
+          if (!valid) return null;
 
-        const membership = user.memberships[0];
-        if (!membership) return null;
+          const membership = user.memberships[0];
+          if (!membership) return null;
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          image: user.image,
-          organizationId: membership.organizationId,
-          organizationName: membership.organization.name,
-          role: membership.role,
-        };
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            organizationId: membership.organizationId,
+            organizationName: membership.organization.name,
+            role: membership.role,
+          };
+        } catch (err) {
+          console.error("[auth] authorize failed (check DATABASE_URL / schema):", err);
+          return null;
+        }
       },
     }),
   ],
@@ -93,20 +100,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Always re-load membership so role demotion / org removal takes effect
       // without waiting for re-login (JWT otherwise stays stale).
       if (token.id) {
-        const membership = await prisma.orgMember.findFirst({
-          where: { userId: token.id as string },
-          include: { organization: true },
-          orderBy: { createdAt: "asc" },
-        });
-        if (membership) {
-          token.organizationId = membership.organizationId;
-          token.organizationName = membership.organization.name;
-          token.role = membership.role;
-        } else {
-          // Removed from every org — drop privileged claims
-          delete token.organizationId;
-          delete token.organizationName;
-          delete token.role;
+        try {
+          const membership = await prisma.orgMember.findFirst({
+            where: { userId: token.id as string },
+            include: { organization: true },
+            orderBy: { createdAt: "asc" },
+          });
+          if (membership) {
+            token.organizationId = membership.organizationId;
+            token.organizationName = membership.organization.name;
+            token.role = membership.role;
+          } else {
+            // Removed from every org — drop privileged claims
+            delete token.organizationId;
+            delete token.organizationName;
+            delete token.role;
+          }
+        } catch (err) {
+          // Don't 500 /api/auth/session if Neon is briefly unreachable
+          console.error("[auth] jwt membership reload failed:", err);
         }
       }
 

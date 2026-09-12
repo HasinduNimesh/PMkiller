@@ -11,9 +11,13 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/github/webhook");
 
+  // On HTTPS (Vercel), Auth.js names the cookie `__Secure-authjs.session-token`.
+  // getToken defaults to the non-secure name unless secureCookie is true — that
+  // mismatch causes login↔dashboard redirect loops in production.
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET,
+    secureCookie: req.nextUrl.protocol === "https:",
   });
 
   // Require a usable org membership claim (cleared when user is removed from all orgs)
