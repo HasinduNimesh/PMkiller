@@ -133,25 +133,31 @@ DATABASE_URL="your-neon-url-with-params" pnpm db:push
 
 ProjManager exposes a **scrum API** at `/api/v1/*` plus a **stdio MCP server** so agents can plan sprints, create/assign issues, and move work.
 
-### 1. Server env (Vercel or local)
+### Preferred: personal token (per user, no Vercel email env)
+
+1. Log in to the app as yourself (e.g. `sumudu@claptac.dev`).
+2. Open **Integrations** → **Create token** → copy the `pmk_…` value (shown once).
+3. In Cursor MCP config set:
+   - `PROJMANAGER_URL` → `https://pmkiller.vercel.app`
+   - `MCP_API_KEY` → that personal token  
+   - Do **not** set `MCP_ACT_AS_EMAIL` — the token already carries your user + role.
+
+Each teammate creates their own token while logged in; agents run with **their** RBAC role.
+
+### Legacy (optional): shared server key
 
 | Variable | Purpose |
 |----------|---------|
-| `MCP_API_KEY` | Shared bearer secret (`openssl rand -base64 32`) |
-| `MCP_ACT_AS_EMAIL` | Org user the MCP acts as (e.g. `admin@acme.test`) |
+| `MCP_API_KEY` | Shared bearer secret on Vercel |
+| `MCP_ACT_AS_EMAIL` | Fixed impersonation email (avoid for multi-user) |
 
-### 2. Cursor MCP config
+### Cursor MCP config
 
-In the app, open **Integrations** (sidebar) for copy-paste setups for **Cursor**, **Claude Code**, and **Claude Desktop**.
+In the app, open **Integrations** for copy-paste setups for **Cursor**, **Claude Code**, and **Claude Desktop**.
 
-Or copy `mcp/cursor.mcp.example.json` into your Cursor MCP settings and set:
+Or copy `mcp/cursor.mcp.example.json` into your Cursor MCP settings and set `cwd` + your `pmk_` token.
 
-- `PROJMANAGER_URL` → `https://pmkiller.vercel.app` (or `http://localhost:3000`)
-- `MCP_API_KEY` → same as server
-- `MCP_ACT_AS_EMAIL` → your org member email
-- `cwd` → this repo path
-
-### 3. Tools
+### Tools
 
 `list_projects`, `list_issues`, `create_issue`, `update_issue`, `list_sprints`, `create_sprint`, `start_sprint`, `complete_sprint`, `my_work`, plus prompt `plan_sprint`.
 

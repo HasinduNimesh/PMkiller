@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Check, CheckCircle2, Copy, Terminal, Sparkles, Code2 } from "lucide-react";
+import { Check, Copy, Terminal, Sparkles, Code2 } from "lucide-react";
 
 type MethodId = "cursor" | "claude-code" | "claude-desktop";
 
@@ -41,18 +41,17 @@ function CopyBlock({ label, value }: { label: string; value: string }) {
 export function McpConnectPanel({
   baseUrl,
   actorEmail,
-  apiConfigured,
+  actorRole,
 }: {
   baseUrl: string;
   actorEmail: string;
-  apiConfigured: boolean;
+  actorRole: string;
 }) {
   const [method, setMethod] = useState<MethodId>("cursor");
 
   const envBlock = [
     `PROJMANAGER_URL=${baseUrl}`,
-    `MCP_API_KEY=<your-MCP_API_KEY>`,
-    `MCP_ACT_AS_EMAIL=${actorEmail}`,
+    `MCP_API_KEY=<paste-your-personal-pmk_token>`,
   ].join("\n");
 
   const cursorJson = JSON.stringify(
@@ -64,8 +63,7 @@ export function McpConnectPanel({
           cwd: "<path-to-Proj-Manager-repo>",
           env: {
             PROJMANAGER_URL: baseUrl,
-            MCP_API_KEY: "<your-MCP_API_KEY>",
-            MCP_ACT_AS_EMAIL: actorEmail,
+            MCP_API_KEY: "<paste-your-personal-pmk_token>",
           },
         },
       },
@@ -83,8 +81,7 @@ export function McpConnectPanel({
           args: ["exec", "tsx", "mcp/server.ts"],
           env: {
             PROJMANAGER_URL: baseUrl,
-            MCP_API_KEY: "<your-MCP_API_KEY>",
-            MCP_ACT_AS_EMAIL: actorEmail,
+            MCP_API_KEY: "<paste-your-personal-pmk_token>",
           },
         },
       },
@@ -97,8 +94,7 @@ export function McpConnectPanel({
     `cd <path-to-Proj-Manager-repo>`,
     `claude mcp add --scope user projmanager -- env \\`,
     `  PROJMANAGER_URL=${baseUrl} \\`,
-    `  MCP_API_KEY=<your-MCP_API_KEY> \\`,
-    `  MCP_ACT_AS_EMAIL=${actorEmail} \\`,
+    `  MCP_API_KEY=<paste-your-personal-pmk_token> \\`,
     `  pnpm exec tsx mcp/server.ts`,
   ].join("\n");
 
@@ -130,23 +126,13 @@ export function McpConnectPanel({
 
   return (
     <div className="space-y-6">
-      {apiConfigured ? (
-        <div className="callout callout-ok" role="status">
-          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
-          <span>
-            MCP API is enabled on this deployment. Use your server{" "}
-            <code>MCP_API_KEY</code> in the client config below.
-          </span>
-        </div>
-      ) : (
-        <div className="callout callout-warn" role="alert">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
-          <span>
-            Set <code>MCP_API_KEY</code> and <code>MCP_ACT_AS_EMAIL</code> on the server (Vercel
-            env), then redeploy before connecting a client.
-          </span>
-        </div>
-      )}
+      <div className="callout callout-ok" role="status">
+        <Check className="mt-0.5 h-5 w-5 shrink-0" />
+        <span>
+          Logged in as <code>{actorEmail}</code> ({actorRole}). Create a personal token above, then
+          paste it as <code>MCP_API_KEY</code> in your client — no Vercel email env needed.
+        </span>
+      </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
         {methods.map((m) => {
@@ -180,17 +166,17 @@ export function McpConnectPanel({
               <div>
                 <h2 className="font-display text-lg font-semibold tracking-tight">Connect Cursor</h2>
                 <p className="mt-1 text-sm text-base-content/60">
-                  Add ProjManager as an MCP server so Agent Mode can plan sprints, create issues, and
-                  assign work.
+                  Use your personal <code className="font-mono text-primary">pmk_</code> token from
+                  above. The agent runs as you ({actorRole}).
                 </p>
               </div>
               <ol className="list-decimal space-y-2 pl-5 text-sm text-base-content/75">
+                <li>Create a personal token in the section above and copy it.</li>
                 <li>Clone this repo (needs <code className="font-mono text-primary">mcp/server.ts</code>).</li>
                 <li>
-                  Open <strong>Cursor Settings → MCP</strong> (or project{" "}
-                  <code className="font-mono text-primary">.cursor/mcp.json</code>).
+                  Open <strong>Cursor Settings → MCP</strong> and paste the JSON below (replace the
+                  token placeholder).
                 </li>
-                <li>Paste the JSON below, set repo path + API key, then restart MCP / reload Cursor.</li>
               </ol>
               <CopyBlock label="Cursor mcp.json" value={cursorJson} />
               <CopyBlock label="Env values" value={envBlock} />
@@ -202,12 +188,11 @@ export function McpConnectPanel({
               <div>
                 <h2 className="font-display text-lg font-semibold tracking-tight">Connect Claude Code</h2>
                 <p className="mt-1 text-sm text-base-content/60">
-                  Use project <code className="font-mono text-primary">.mcp.json</code> or add via CLI so
-                  Claude Code can call the same scrum tools.
+                  Same personal token — no <code className="font-mono text-primary">MCP_ACT_AS_EMAIL</code>.
                 </p>
               </div>
               <ol className="list-decimal space-y-2 pl-5 text-sm text-base-content/75">
-                <li>From the ProjManager repo root, add a user-scoped or project-scoped server.</li>
+                <li>Create a personal token above.</li>
                 <li>
                   Prefer CLI, or create <code className="font-mono text-primary">.mcp.json</code> and
                   restart Claude Code.

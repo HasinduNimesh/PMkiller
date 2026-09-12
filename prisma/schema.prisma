@@ -84,6 +84,26 @@ model User {
   watchedTasks     TaskWatcher[]
   accounts         Account[]
   sessions         Session[]
+  apiTokens        ApiToken[]
+}
+
+/// Personal bearer token for MCP /api/v1 — binds to this user + their org role.
+model ApiToken {
+  id         String    @id @default(cuid())
+  userId     String
+  name       String
+  /// First 8 chars of the secret for display (pmk_xxxx…)
+  prefix     String
+  /// SHA-256 hex of the full token
+  tokenHash  String    @unique
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Organization {

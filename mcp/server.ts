@@ -5,8 +5,9 @@
  *
  * Env:
  *   PROJMANAGER_URL   e.g. https://pmkiller.vercel.app  (or http://localhost:3000)
- *   MCP_API_KEY       same value as server MCP_API_KEY
- *   MCP_ACT_AS_EMAIL  org member email (optional if set on server)
+ *   MCP_API_KEY       personal token from Integrations (pmk_…) — preferred
+ *                     OR shared server MCP_API_KEY (legacy; then set MCP_ACT_AS_EMAIL)
+ *   MCP_ACT_AS_EMAIL  only needed for legacy shared key
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -21,14 +22,17 @@ async function api(
   init: RequestInit & { json?: unknown } = {},
 ): Promise<unknown> {
   if (!apiKey) {
-    throw new Error("MCP_API_KEY is required");
+    throw new Error(
+      "MCP_API_KEY is required (create a personal pmk_ token on /integrations while logged in)",
+    );
   }
   const headers: Record<string, string> = {
     Authorization: `Bearer ${apiKey}`,
     Accept: "application/json",
     ...(init.headers as Record<string, string> | undefined),
   };
-  if (actAs) headers["X-Act-As-Email"] = actAs;
+  // Personal tokens already bind identity — only send Act-As for legacy shared keys
+  if (actAs && !apiKey.startsWith("pmk_")) headers["X-Act-As-Email"] = actAs;
   if (init.json !== undefined) {
     headers["Content-Type"] = "application/json";
   }
