@@ -145,8 +145,8 @@ export default async function ProjectDetailPage({
       )}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <div className="card bg-base-100 shadow md:col-span-2 xl:col-span-1">
-          <div className="card-body items-center text-center">
+        <div className="panel md:col-span-2 xl:col-span-1">
+          <div className="panel-body items-center text-center">
             <div
               className="radial-progress text-primary"
               style={{ "--value": pct, "--size": "5rem" } as React.CSSProperties}
@@ -160,8 +160,8 @@ export default async function ProjectDetailPage({
           </div>
         </div>
         {(Object.keys(bySeverity) as Array<keyof typeof bySeverity>).map((key) => (
-          <div key={key} className="card bg-base-100 shadow">
-            <div className="card-body py-4">
+          <div key={key} className="panel">
+            <div className="panel-body py-4">
               <SeverityBadge severity={key} />
               <div className="font-display text-3xl font-semibold">{bySeverity[key]}</div>
               <div className="text-xs opacity-50">by priority</div>
@@ -170,10 +170,10 @@ export default async function ProjectDetailPage({
         ))}
       </div>
 
-      <div className="card bg-base-100 shadow">
-        <div className="card-body">
+      <div className="panel">
+        <div className="panel-body">
           <div className="flex items-center justify-between">
-            <h2 className="card-title text-lg">Recent issues</h2>
+            <h2 className="font-display text-lg font-semibold tracking-tight">Recent issues</h2>
             <Link href={`/projects/${project.id}/tasks`} className="btn btn-ghost btn-sm">
               View all
             </Link>

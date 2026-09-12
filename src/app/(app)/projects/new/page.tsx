@@ -19,9 +19,9 @@ export default function NewProjectPage() {
         <p className="mt-1 text-sm opacity-60">Set the window; CPM will schedule tasks inside it.</p>
       </div>
 
-      <div className="card bg-base-100 shadow">
+      <div className="panel">
         <form
-          className="card-body gap-2"
+          className="panel-body gap-2"
           action={(fd) => {
             startTransition(async () => {
               const result = await createProjectAction(fd);
@@ -78,7 +78,7 @@ export default function NewProjectPage() {
             </div>
           )}
 
-          <div className="card-actions mt-2 justify-end">
+          <div className="flex flex-wrap items-center gap-2 mt-2 justify-end">
             <button type="submit" disabled={pending} className="btn btn-primary">
               {pending ? <span className="loading loading-spinner loading-sm" /> : null}
               {pending ? "Creating…" : "Create project"}

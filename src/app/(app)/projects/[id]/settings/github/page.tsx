@@ -33,8 +33,8 @@ export default async function GithubRepoPickerPage({
           projectKey={project.key}
           active="settings"
         />
-        <div className="card border border-warning/40 bg-base-100 shadow">
-          <div className="card-body gap-3">
+        <div className="panel border-warning/40">
+          <div className="panel-body gap-3">
             <div className="flex items-start gap-3">
               <Settings2 className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
               <div>
@@ -55,7 +55,7 @@ export default async function GithubRepoPickerPage({
                 </p>
               </div>
             </div>
-            <div className="card-actions">
+            <div className="flex flex-wrap items-center gap-2">
               <Link href={`/projects/${id}/settings`} className="btn btn-primary btn-sm">
                 Back to settings
               </Link>
@@ -79,8 +79,8 @@ export default async function GithubRepoPickerPage({
           projectKey={project.key}
           active="settings"
         />
-        <div className="card bg-base-100 shadow">
-          <div className="card-body items-center text-center">
+        <div className="panel">
+          <div className="panel-body items-center text-center">
             <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-base-200">
               <GitBranch className="h-5 w-5 opacity-50" />
             </div>

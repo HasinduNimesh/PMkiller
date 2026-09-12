@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { DM_Sans, Fraunces } from "next/font/google";
+import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
-const sans = DM_Sans({
+const sans = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
 });
@@ -26,7 +26,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       data-theme="corporate"
       className={`${sans.variable} ${display.variable} h-full`}
     >
-      <body className="min-h-full bg-base-200 font-sans text-base-content antialiased">
+      <body className="app-canvas min-h-full font-sans text-base-content antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

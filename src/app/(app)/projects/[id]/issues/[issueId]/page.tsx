@@ -121,8 +121,8 @@ export default async function IssueDetailPage({
       </div>
 
       {issue.githubPrUrl ? (
-        <div className="card border border-success/30 bg-success/5 shadow-sm">
-          <div className="card-body flex-row flex-wrap items-center justify-between gap-3 py-4">
+        <div className="panel border-success/30 bg-success/5">
+          <div className="panel-body flex-row flex-wrap items-center justify-between gap-3 py-4">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-success/15 text-success">
                 <svg
@@ -174,9 +174,9 @@ export default async function IssueDetailPage({
 
       <div className="grid gap-6 xl:grid-cols-3">
         <div className="space-y-4 xl:col-span-2">
-          <div className="card bg-base-100 shadow">
-            <div className="card-body">
-              <h2 className="card-title text-base">Description</h2>
+          <div className="panel">
+            <div className="panel-body">
+              <h2 className="font-display font-semibold tracking-tight text-base">Description</h2>
               <p className="whitespace-pre-wrap text-sm opacity-80">
                 {issue.description || "No description."}
               </p>
@@ -184,9 +184,9 @@ export default async function IssueDetailPage({
           </div>
 
           {issue.issueType === "EPIC" && issue.epicChildren.length > 0 && (
-            <div className="card bg-base-100 shadow">
-              <div className="card-body">
-                <h2 className="card-title text-base">Issues in epic</h2>
+            <div className="panel">
+              <div className="panel-body">
+                <h2 className="font-display font-semibold tracking-tight text-base">Issues in epic</h2>
                 <ul className="space-y-2">
                   {issue.epicChildren.map((c) => (
                     <li key={c.id} className="flex justify-between gap-2 text-sm">
@@ -202,9 +202,9 @@ export default async function IssueDetailPage({
           )}
 
           {issue.subtasks.length > 0 && (
-            <div className="card bg-base-100 shadow">
-              <div className="card-body">
-                <h2 className="card-title text-base">Subtasks</h2>
+            <div className="panel">
+              <div className="panel-body">
+                <h2 className="font-display font-semibold tracking-tight text-base">Subtasks</h2>
                 <ul className="space-y-2">
                   {issue.subtasks.map((c) => (
                     <li key={c.id} className="flex justify-between gap-2 text-sm">
@@ -219,9 +219,9 @@ export default async function IssueDetailPage({
             </div>
           )}
 
-          <div className="card bg-base-100 shadow">
-            <div className="card-body">
-              <h2 className="card-title text-base">Comments</h2>
+          <div className="panel">
+            <div className="panel-body">
+              <h2 className="font-display font-semibold tracking-tight text-base">Comments</h2>
               {issue.comments.length === 0 && (
                 <p className="text-sm opacity-50">No comments yet.</p>
               )}
@@ -237,9 +237,9 @@ export default async function IssueDetailPage({
             </div>
           </div>
 
-          <div className="card bg-base-100 shadow">
-            <div className="card-body">
-              <h2 className="card-title text-base">Activity</h2>
+          <div className="panel">
+            <div className="panel-body">
+              <h2 className="font-display font-semibold tracking-tight text-base">Activity</h2>
               <ul className="timeline timeline-vertical timeline-compact">
                 {issue.activities.map((a) => (
                   <li key={a.id}>
@@ -269,15 +269,15 @@ export default async function IssueDetailPage({
 
         <div className="space-y-4">
           {editable && (
-            <div className="card bg-base-100 shadow">
+            <div className="panel">
               <form
-                className="card-body gap-2"
+                className="panel-body gap-2"
                 action={async (fd) => {
                   "use server";
                   await updateTaskFieldsAction(issue.id, fd);
                 }}
               >
-                <h2 className="card-title text-base">Details</h2>
+                <h2 className="font-display font-semibold tracking-tight text-base">Details</h2>
                 <fieldset className="fieldset">
                   <legend className="fieldset-legend">Assignee</legend>
                   <select
@@ -350,7 +350,7 @@ export default async function IssueDetailPage({
                 <button className="btn btn-primary btn-sm">Save details</button>
               </form>
               <form
-                className="card-body pt-0"
+                className="panel-body pt-0"
                 action={async (fd) => {
                   "use server";
                   const status = String(fd.get("status"));
@@ -381,8 +381,8 @@ export default async function IssueDetailPage({
             </div>
           )}
 
-          <div className="card bg-base-100 shadow">
-            <div className="card-body text-sm">
+          <div className="panel">
+            <div className="panel-body text-sm">
               <div className="flex justify-between">
                 <span className="opacity-60">Sprint</span>
                 <span>{issue.sprint?.name ?? "—"}</span>

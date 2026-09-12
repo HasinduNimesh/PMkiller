@@ -105,9 +105,9 @@ export default async function ProjectSettingsPage({
       />
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <section className="card bg-base-100 shadow">
-          <div className="card-body">
-            <h2 className="card-title text-base">Labels</h2>
+        <section className="panel">
+          <div className="panel-body">
+            <h2 className="font-display font-semibold tracking-tight text-base">Labels</h2>
             <ul className="space-y-1">
               {project.labels.map((l) => (
                 <li key={l.id}>
@@ -136,9 +136,9 @@ export default async function ProjectSettingsPage({
           </div>
         </section>
 
-        <section className="card bg-base-100 shadow">
-          <div className="card-body">
-            <h2 className="card-title text-base">Components</h2>
+        <section className="panel">
+          <div className="panel-body">
+            <h2 className="font-display font-semibold tracking-tight text-base">Components</h2>
             <ul className="space-y-1 text-sm">
               {project.components.map((c) => (
                 <li key={c.id}>
@@ -172,9 +172,9 @@ export default async function ProjectSettingsPage({
           </div>
         </section>
 
-        <section className="card bg-base-100 shadow">
-          <div className="card-body">
-            <h2 className="card-title text-base">Versions / releases</h2>
+        <section className="panel">
+          <div className="panel-body">
+            <h2 className="font-display font-semibold tracking-tight text-base">Versions / releases</h2>
             <ul className="space-y-1 text-sm">
               {project.versions.map((v) => (
                 <li key={v.id} className="flex items-center gap-2">

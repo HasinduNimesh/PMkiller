@@ -19,7 +19,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     <div className="drawer lg:drawer-open min-h-screen">
       <input id="app-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex min-h-screen flex-col">
-        <div className="navbar border-b border-base-300 bg-base-100 px-4 shadow-sm lg:hidden">
+        <div className="navbar sticky top-0 z-30 border-b border-base-300/60 bg-base-100/80 px-4 backdrop-blur-xl lg:hidden">
           <div className="flex-none">
             <label htmlFor="app-drawer" className="btn btn-square btn-ghost" aria-label="Open menu">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -28,8 +28,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             </label>
           </div>
           <div className="flex-1 px-2">
-            {session ? <GlobalSearch /> : (
-              <Link href="/dashboard" className="font-display text-lg font-semibold">
+            {session ? (
+              <GlobalSearch />
+            ) : (
+              <Link href="/dashboard" className="font-display text-lg font-semibold tracking-tight">
                 Proj<span className="text-primary">Manager</span>
               </Link>
             )}
@@ -37,14 +39,14 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <ThemeToggle />
         </div>
         {session && (
-          <div className="border-b border-base-300 bg-base-100 px-4 py-2 lg:hidden">
+          <div className="border-b border-base-300/60 bg-base-100/70 px-4 py-2 backdrop-blur lg:hidden">
             <GlobalSearch compact />
           </div>
         )}
 
-        <div className="hidden border-b border-base-300 bg-base-100 px-6 py-3 lg:flex lg:items-center lg:justify-between gap-4">
+        <div className="sticky top-0 z-20 hidden border-b border-base-300/60 bg-base-100/75 px-6 py-3 backdrop-blur-xl lg:flex lg:items-center lg:justify-between lg:gap-4">
           <div className="flex min-w-0 flex-1 items-center gap-4">
-            <div className="shrink-0 text-sm text-base-content/60">
+            <div className="shrink-0 rounded-full bg-base-200/80 px-3 py-1 text-xs font-medium text-base-content/55">
               {session?.user.organizationName}
             </div>
             {session && <GlobalSearch />}
@@ -52,13 +54,15 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <ThemeToggle />
             {session && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-base-300/50 bg-base-100/80 py-1.5 pl-3 pr-1.5">
                 <div className="text-right">
-                  <div className="text-sm font-medium">{session.user.name}</div>
-                  <div className="badge badge-outline badge-sm">{session.user.role}</div>
+                  <div className="text-sm font-semibold leading-tight">{session.user.name}</div>
+                  <div className="text-[11px] uppercase tracking-wide text-base-content/45">
+                    {session.user.role}
+                  </div>
                 </div>
                 <div className="avatar placeholder">
-                  <div className="w-10 rounded-full bg-primary text-primary-content">
+                  <div className="w-9 rounded-xl bg-primary text-primary-content">
                     <span className="text-sm font-semibold">
                       {(session.user.name ?? "U").slice(0, 1).toUpperCase()}
                     </span>
@@ -74,55 +78,47 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="drawer-side z-40">
         <label htmlFor="app-drawer" aria-label="Close menu" className="drawer-overlay" />
-        <aside className="flex min-h-full w-72 flex-col bg-base-100 text-base-content">
-          <div className="border-b border-base-300 px-5 py-5">
+        <aside className="flex min-h-full w-[17.5rem] flex-col border-r border-base-300/60 bg-base-100/95 text-base-content backdrop-blur-xl">
+          <div className="px-5 pb-4 pt-6">
             <Link href="/dashboard" className="font-display text-2xl font-semibold tracking-tight">
               Proj<span className="text-primary">Manager</span>
             </Link>
-            <p className="mt-1 text-xs text-base-content/50">Jira-style · CPM · RBAC</p>
+            <p className="mt-1.5 text-xs text-base-content/45">Plan · ship · critical path</p>
           </div>
 
           {session && (
-            <ul className="menu w-full flex-1 gap-1 p-3 text-base">
-              <li>
-                <Link href="/dashboard">
-                  <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link href="/my-work">
-                  <ListTodo className="h-4 w-4" />
-                  My work
-                </Link>
-              </li>
-              <li>
-                <Link href="/projects">
-                  <FolderKanban className="h-4 w-4" />
-                  Projects
-                </Link>
-              </li>
+            <nav className="flex flex-1 flex-col gap-1 px-3 py-2">
+              <Link href="/dashboard" className="sidebar-link">
+                <LayoutDashboard className="h-4 w-4 opacity-70" />
+                Dashboard
+              </Link>
+              <Link href="/my-work" className="sidebar-link">
+                <ListTodo className="h-4 w-4 opacity-70" />
+                My work
+              </Link>
+              <Link href="/projects" className="sidebar-link">
+                <FolderKanban className="h-4 w-4 opacity-70" />
+                Projects
+              </Link>
               {canManageUsers(session.user.role) && (
-                <li>
-                  <Link href="/admin/users">
-                    <Users className="h-4 w-4" />
-                    Users & roles
-                  </Link>
-                </li>
+                <Link href="/admin/users" className="sidebar-link">
+                  <Users className="h-4 w-4 opacity-70" />
+                  Users & roles
+                </Link>
               )}
-            </ul>
+            </nav>
           )}
 
           {session && (
-            <div className="border-t border-base-300 p-3">
-              <div className="mb-2 rounded-box bg-base-200 px-3 py-2 text-xs lg:hidden">
-                <div className="font-medium">{session.user.name}</div>
-                <div className="opacity-60">
+            <div className="mt-auto border-t border-base-300/60 p-3">
+              <div className="mb-2 rounded-2xl bg-base-200/70 px-3 py-2.5 text-xs lg:hidden">
+                <div className="font-semibold">{session.user.name}</div>
+                <div className="mt-0.5 text-base-content/50">
                   {session.user.organizationName} · {session.user.role}
                 </div>
               </div>
               <form action={logoutAction}>
-                <button type="submit" className="btn btn-ghost btn-block justify-start gap-2">
+                <button type="submit" className="btn btn-ghost btn-block justify-start gap-2 rounded-xl">
                   <LogOut className="h-4 w-4" />
                   Sign out
                 </button>

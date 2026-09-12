@@ -46,17 +46,17 @@ export default async function BacklogPage({ params }: { params: Promise<{ id: st
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="card bg-base-100 shadow lg:col-span-2">
-          <div className="card-body">
-            <h2 className="card-title text-lg">Issue backlog</h2>
+        <div className="panel lg:col-span-2">
+          <div className="panel-body">
+            <h2 className="font-display text-lg font-semibold tracking-tight">Issue backlog</h2>
             <BacklogList projectId={id} issues={issues} sprints={sprints} />
           </div>
         </div>
 
         <div className="space-y-4">
           {active && (
-            <div className="card border border-primary/30 bg-base-100 shadow">
-              <div className="card-body gap-2">
+            <div className="panel border-primary/30">
+              <div className="panel-body gap-2">
                 <div className="badge badge-primary">Active sprint</div>
                 <h3 className="font-semibold">{active.name}</h3>
                 {active.goal && <p className="text-sm opacity-70">{active.goal}</p>}
@@ -84,8 +84,8 @@ export default async function BacklogPage({ params }: { params: Promise<{ id: st
           )}
 
           {planned.map((s) => (
-            <div key={s.id} className="card bg-base-100 shadow">
-              <div className="card-body gap-2">
+            <div key={s.id} className="panel">
+              <div className="panel-body gap-2">
                 <div className="badge badge-ghost">Planned</div>
                 <h3 className="font-semibold">{s.name}</h3>
                 {s.goal && <p className="text-sm opacity-70">{s.goal}</p>}
@@ -104,9 +104,9 @@ export default async function BacklogPage({ params }: { params: Promise<{ id: st
           ))}
 
           {canManage && (
-            <div className="card bg-base-100 shadow">
+            <div className="panel">
               <form
-                className="card-body gap-2"
+                className="panel-body gap-2"
                 action={async (fd) => {
                   "use server";
                   await createSprintAction(id, fd);

@@ -22,22 +22,22 @@ export default async function ProjectsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="page-header">
         <div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">Projects</h1>
+          <h1 className="page-title">Projects</h1>
           <p className="mt-1 text-sm text-base-content/60">
             Manage delivery and deadlines across the org.
           </p>
         </div>
         {canManageProjects(session.user.role) && (
-          <Link href="/projects/new" className="btn btn-primary gap-2">
+          <Link href="/projects/new" className="btn btn-primary gap-2 rounded-xl">
             <Plus className="h-4 w-4" />
             New project
           </Link>
         )}
       </div>
 
-      <div className="card bg-base-100 shadow">
+      <div className="panel">
         <div className="overflow-x-auto">
           <table className="table">
             <thead>

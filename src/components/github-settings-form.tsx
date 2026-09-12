@@ -38,10 +38,10 @@ export function GithubSettingsForm({
   const [msg, setMsg] = useState<string | null>(null);
 
   return (
-    <div className="card border border-primary/20 bg-base-100 shadow">
-      <div className="card-body gap-4">
+    <div className="panel border-primary/20">
+      <div className="panel-body space-y-4">
         <div>
-          <h2 className="card-title text-lg">GitHub integration</h2>
+          <h2 className="font-display text-lg font-semibold tracking-tight">GitHub integration</h2>
           <p className="text-sm opacity-70">
             Connect a repository so merged PRs that mention{" "}
             <code className="font-mono">{projectKey}-12</code> auto-mark issues DONE.

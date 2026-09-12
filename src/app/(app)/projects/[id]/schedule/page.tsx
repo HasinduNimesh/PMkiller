@@ -94,8 +94,8 @@ export default async function SchedulePage({
         }))}
       />
 
-      <div className="card bg-base-100 shadow">
-        <div className="card-body p-0">
+      <div className="panel">
+        <div className="panel-body p-0">
           <div className="border-b border-base-200 px-4 py-3 font-semibold">
             CPM table
             <span className="badge badge-error badge-sm ml-2">{critical.length} critical</span>

@@ -11,9 +11,9 @@ export function InviteUserForm() {
   const [pending, startTransition] = useTransition();
 
   return (
-    <div className="card bg-base-100 shadow">
+    <div className="panel">
       <form
-        className="card-body gap-2"
+        className="panel-body gap-2"
         action={(fd) => {
           startTransition(async () => {
             const result = await inviteUserAction(fd);
@@ -28,7 +28,7 @@ export function InviteUserForm() {
           });
         }}
       >
-        <h2 className="card-title text-lg">Add organization user</h2>
+        <h2 className="font-display text-lg font-semibold tracking-tight">Add organization user</h2>
         <p className="text-sm opacity-60">
           Create a new login for your org, or add an existing email if they already registered.
         </p>
@@ -75,7 +75,7 @@ export function InviteUserForm() {
           </div>
         )}
 
-        <div className="card-actions justify-end">
+        <div className="flex flex-wrap items-center gap-2 justify-end">
           <button type="submit" disabled={pending} className="btn btn-primary btn-sm">
             {pending ? <span className="loading loading-spinner loading-xs" /> : null}
             Add user

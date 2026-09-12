@@ -51,7 +51,7 @@ export function KanbanBoard({
     <div className={`relative grid gap-3 lg:grid-cols-5 ${pending ? "opacity-70" : ""}`}>
       {pending && (
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center">
-          <span className="badge badge-ghost gap-2 bg-base-100 shadow">
+          <span className="inline-flex items-center gap-2 rounded-full border border-base-300/60 bg-base-100 px-3 py-1.5 text-xs shadow-sm">
             <span className="loading loading-spinner loading-xs" />
             Updating…
           </span>
@@ -62,7 +62,7 @@ export function KanbanBoard({
         return (
           <div
             key={status}
-            className="rounded-box bg-base-200/70 p-2"
+            className="kanban-column"
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
               e.preventDefault();
@@ -70,15 +70,17 @@ export function KanbanBoard({
               if (taskId) onDrop(status, taskId);
             }}
           >
-            <div className="mb-2 flex items-center justify-between px-1">
-              <h3 className="text-xs font-semibold uppercase tracking-wide opacity-70">
+            <div className="mb-2.5 flex items-center justify-between px-1.5">
+              <h3 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-base-content/50">
                 {status.replaceAll("_", " ")}
               </h3>
-              <span className="badge badge-sm">{column.length}</span>
+              <span className="rounded-full bg-base-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-base-content/55">
+                {column.length}
+              </span>
             </div>
-            <div className="min-h-40 space-y-2">
+            <div className="flex flex-1 flex-col space-y-2">
               {column.length === 0 ? (
-                <div className="flex min-h-40 items-center justify-center rounded-box border border-dashed border-base-300 px-2 text-center text-[11px] leading-snug text-base-content/40">
+                <div className="flex min-h-36 flex-1 items-center justify-center rounded-xl border border-dashed border-base-300/70 px-2 text-center text-[11px] leading-snug text-base-content/35">
                   Drop cards here
                 </div>
               ) : (
@@ -87,30 +89,32 @@ export function KanbanBoard({
                     key={issue.id}
                     draggable
                     onDragStart={(e) => e.dataTransfer.setData("text/task-id", issue.id)}
-                    className="card cursor-grab bg-base-100 shadow-sm active:cursor-grabbing"
+                    className="kanban-card cursor-grab active:cursor-grabbing"
                   >
-                    <div className="card-body gap-2 p-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <Link
-                          href={`/projects/${projectId}/issues/${issue.id}`}
-                          className="font-mono text-xs link link-hover opacity-60"
-                        >
-                          {issue.issueKey}
-                        </Link>
-                        <IssueTypeBadge type={issue.issueType} />
-                      </div>
+                    <div className="flex items-center justify-between gap-2">
                       <Link
                         href={`/projects/${projectId}/issues/${issue.id}`}
-                        className="text-sm font-medium leading-snug link link-hover"
+                        className="font-mono text-[11px] text-base-content/45 link link-hover"
                       >
-                        {issue.title}
+                        {issue.issueKey}
                       </Link>
-                      <div className="flex items-center justify-between gap-2">
-                        <SeverityBadge severity={issue.severity} />
-                        <div className="flex items-center gap-1 text-xs opacity-60">
-                          {issue.storyPoints != null && <span>{issue.storyPoints} sp</span>}
-                          <span>{issue.assignee?.name?.split(" ")[0] ?? "—"}</span>
-                        </div>
+                      <IssueTypeBadge type={issue.issueType} />
+                    </div>
+                    <Link
+                      href={`/projects/${projectId}/issues/${issue.id}`}
+                      className="mt-2 block text-sm font-semibold leading-snug link link-hover"
+                    >
+                      {issue.title}
+                    </Link>
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      <SeverityBadge severity={issue.severity} />
+                      <div className="flex items-center gap-1.5 text-[11px] text-base-content/50">
+                        {issue.storyPoints != null && (
+                          <span className="rounded-md bg-base-200 px-1.5 py-0.5 font-medium tabular-nums">
+                            {issue.storyPoints} sp
+                          </span>
+                        )}
+                        <span>{issue.assignee?.name?.split(" ")[0] ?? "—"}</span>
                       </div>
                     </div>
                   </div>

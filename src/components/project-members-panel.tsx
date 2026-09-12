@@ -39,10 +39,10 @@ export function ProjectMembersPanel({
   const available = orgUsers.filter((u) => !memberIds.has(u.id));
 
   return (
-    <div className="card bg-base-100 shadow">
-      <div className="card-body gap-3">
+    <div className="panel">
+      <div className="panel-body gap-3">
         <div>
-          <h2 className="card-title text-lg">Project members</h2>
+          <h2 className="font-display text-lg font-semibold tracking-tight">Project members</h2>
           <p className="text-sm opacity-60">
             People on this project. When members are listed here, issue assignees must be chosen from
             this list (otherwise any org member can be assigned).

@@ -71,8 +71,8 @@ export default async function RoadmapPage({ params }: { params: Promise<{ id: st
         </div>
       )}
 
-      <div className="card bg-base-100 shadow">
-        <div className="card-body gap-4">
+      <div className="panel">
+        <div className="panel-body gap-4">
           {epics.length === 0 && (
             <p className="text-sm opacity-50">Create epics to populate the roadmap.</p>
           )}

@@ -87,13 +87,13 @@ export function SprintBurndownCard({ sprint }: { sprint: SprintBurndownData }) {
       : null;
 
   return (
-    <div className="card border border-primary/20 bg-base-100 shadow">
-      <div className="card-body gap-3">
+    <div className="panel border-primary/20">
+      <div className="panel-body gap-3 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
               <Flame className="h-4 w-4 text-primary" />
-              <h2 className="card-title text-base">Active sprint</h2>
+              <h2 className="font-display text-base font-semibold tracking-tight">Active sprint</h2>
             </div>
             <p className="mt-1 text-sm">
               <Link
@@ -129,15 +129,15 @@ export function SprintBurndownCard({ sprint }: { sprint: SprintBurndownData }) {
         <progress className="progress progress-primary w-full" value={pct} max={100} />
 
         <div className="grid grid-cols-3 gap-2 text-center text-sm">
-          <div className="rounded-box bg-base-200/80 px-2 py-2">
+          <div className="rounded-xl bg-base-200/80 px-2 py-2">
             <div className="font-semibold tabular-nums">{sprint.donePoints}</div>
             <div className="text-[10px] uppercase tracking-wide opacity-50">Done SP</div>
           </div>
-          <div className="rounded-box bg-base-200/80 px-2 py-2">
+          <div className="rounded-xl bg-base-200/80 px-2 py-2">
             <div className="font-semibold tabular-nums">{sprint.remainingPoints}</div>
             <div className="text-[10px] uppercase tracking-wide opacity-50">Remaining</div>
           </div>
-          <div className="rounded-box bg-base-200/80 px-2 py-2">
+          <div className="rounded-xl bg-base-200/80 px-2 py-2">
             <div className="font-semibold tabular-nums">{sprint.totalPoints || "—"}</div>
             <div className="text-[10px] uppercase tracking-wide opacity-50">Committed</div>
           </div>

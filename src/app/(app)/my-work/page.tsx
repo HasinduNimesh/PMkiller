@@ -41,13 +41,13 @@ export default async function MyWorkPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-3xl font-semibold tracking-tight">My work</h1>
+        <h1 className="page-title">My work</h1>
         <p className="text-sm opacity-60">Assigned issues and watches across projects.</p>
       </div>
 
-      <div className="card bg-base-100 shadow">
-        <div className="card-body">
-          <h2 className="card-title text-lg">Assigned to me</h2>
+      <div className="panel">
+        <div className="panel-body">
+          <h2 className="font-display text-lg font-semibold tracking-tight">Assigned to me</h2>
           <div className="overflow-x-auto">
             <table className="table table-sm">
               <thead>
@@ -106,9 +106,9 @@ export default async function MyWorkPage() {
         </div>
       </div>
 
-      <div className="card bg-base-100 shadow">
-        <div className="card-body">
-          <h2 className="card-title text-lg">Watching</h2>
+      <div className="panel">
+        <div className="panel-body">
+          <h2 className="font-display text-lg font-semibold tracking-tight">Watching</h2>
           <ul className="space-y-2">
             {watching.length === 0 && (
               <li className="text-sm opacity-50">You are not watching other open issues.</li>

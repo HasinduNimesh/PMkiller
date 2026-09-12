@@ -47,8 +47,8 @@ export default async function EpicsPage({ params }: { params: Promise<{ id: stri
           const done = epic.epicChildren.filter((c) => c.status === "DONE").length;
           const pct = total ? Math.round((done / total) * 100) : 0;
           return (
-            <div key={epic.id} className="card bg-base-100 shadow">
-              <div className="card-body">
+            <div key={epic.id} className="panel">
+              <div className="panel-body">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <Link
@@ -57,7 +57,7 @@ export default async function EpicsPage({ params }: { params: Promise<{ id: stri
                     >
                       {epic.issueKey}
                     </Link>
-                    <h2 className="card-title text-lg">
+                    <h2 className="font-display text-lg font-semibold tracking-tight">
                       <Link href={`/projects/${id}/issues/${epic.id}`} className="link link-hover">
                         {epic.title}
                       </Link>

@@ -145,7 +145,7 @@ export default async function ProjectTasksPage({
         />
       )}
 
-      <div className="card bg-base-100 shadow">
+      <div className="panel">
         <div className="overflow-x-auto">
           <table className="table table-sm">
             <thead>

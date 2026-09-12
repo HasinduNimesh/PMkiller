@@ -38,8 +38,8 @@ export function RepoPicker({
   }, [q, repos]);
 
   return (
-    <div className="card bg-base-100 shadow">
-      <div className="card-body gap-3">
+    <div className="panel">
+      <div className="panel-body gap-3">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}

@@ -51,8 +51,8 @@ export function GanttChart({
   }
 
   return (
-    <div className="card bg-base-100 shadow">
-      <div className="card-body overflow-x-auto p-4">
+    <div className="panel">
+      <div className="panel-body overflow-x-auto p-4">
         <div className="mb-3 flex min-w-[720px] items-center justify-between text-xs text-base-content/50">
           <span>Start {formatDate(start)}</span>
           <span>Horizon {totalDays} days</span>
