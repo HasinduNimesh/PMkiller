@@ -24,10 +24,8 @@ export default async function ProjectsPage() {
     <div className="space-y-6">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Projects</h1>
-          <p className="mt-1 text-sm text-base-content/60">
-            Manage delivery and deadlines across the org.
-          </p>
+          <h1 className="page-title neon-text">Projects</h1>
+          <p className="page-subtitle">Manage delivery and deadlines across the org.</p>
         </div>
         {canManageProjects(session.user.role) && (
           <Link href="/projects/new" className="btn btn-primary gap-2 rounded-xl">
@@ -37,9 +35,9 @@ export default async function ProjectsPage() {
         )}
       </div>
 
-      <div className="panel">
-        <div className="overflow-x-auto">
-          <table className="table">
+      <div className="panel neon-ring">
+        <div className="overflow-x-auto p-2 sm:p-3">
+          <table className="table table-modern">
             <thead>
               <tr>
                 <th>Project</th>

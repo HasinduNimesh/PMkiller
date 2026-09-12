@@ -40,13 +40,13 @@ export default async function BacklogPage({ params }: { params: Promise<{ id: st
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">Backlog & sprints</h1>
-          <p className="text-sm opacity-60">Plan work into sprints like Jira Scrum.</p>
+          <h1 className="page-title neon-text">Backlog & sprints</h1>
+          <p className="page-subtitle">Plan work into sprints like Jira Scrum.</p>
         </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="panel lg:col-span-2">
+        <div className="panel neon-ring lg:col-span-2">
           <div className="panel-body">
             <h2 className="font-display text-lg font-semibold tracking-tight">Issue backlog</h2>
             <BacklogList projectId={id} issues={issues} sprints={sprints} />
@@ -55,11 +55,13 @@ export default async function BacklogPage({ params }: { params: Promise<{ id: st
 
         <div className="space-y-4">
           {active && (
-            <div className="panel border-primary/30">
+            <div className="panel neon-ring border-primary/35">
               <div className="panel-body gap-2">
-                <div className="badge badge-primary">Active sprint</div>
-                <h3 className="font-semibold">{active.name}</h3>
-                {active.goal && <p className="text-sm opacity-70">{active.goal}</p>}
+                <div className="badge badge-primary shadow-[0_0_16px_color-mix(in_oklab,var(--color-primary)_40%,transparent)]">
+                  Active sprint
+                </div>
+                <h3 className="font-display font-semibold tracking-tight">{active.name}</h3>
+                {active.goal && <p className="text-sm text-base-content/60">{active.goal}</p>}
                 {canManage && (
                   <form
                     action={async () => {
@@ -67,7 +69,7 @@ export default async function BacklogPage({ params }: { params: Promise<{ id: st
                       await completeSprintAction(active.id);
                     }}
                   >
-                    <button className="btn btn-outline btn-sm">Complete sprint</button>
+                    <button className="btn btn-outline btn-sm rounded-xl">Complete sprint</button>
                   </form>
                 )}
               </div>
@@ -75,7 +77,7 @@ export default async function BacklogPage({ params }: { params: Promise<{ id: st
           )}
 
           {!active && planned.length === 0 && (
-            <div className="rounded-box border border-dashed border-base-300 bg-base-200/40 p-5 text-center text-sm text-base-content/60">
+            <div className="rounded-2xl border border-dashed border-primary/25 bg-base-100/40 p-5 text-center text-sm text-base-content/60 backdrop-blur-md">
               <p className="font-medium text-base-content/80">No sprints yet</p>
               <p className="mt-1">
                 Create a sprint to pull issues from the backlog and track story points.

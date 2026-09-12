@@ -35,7 +35,7 @@ function BurndownChart({ sprint }: { sprint: SprintBurndownData }) {
   const cy = toY(progress.remainingY);
 
   return (
-    <div className="rounded-box bg-base-200/60 px-2 py-2">
+    <div className="rounded-xl border border-primary/10 bg-base-100/40 px-2 py-2 backdrop-blur-sm">
       <svg
         viewBox={`0 0 ${w} ${h}`}
         className="h-16 w-full"
@@ -87,12 +87,12 @@ export function SprintBurndownCard({ sprint }: { sprint: SprintBurndownData }) {
       : null;
 
   return (
-    <div className="panel border-primary/20">
+    <div className="panel neon-ring border-primary/25">
       <div className="panel-body gap-3 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <Flame className="h-4 w-4 text-primary" />
+              <Flame className="h-4 w-4 text-primary drop-shadow-[0_0_8px_color-mix(in_oklab,var(--color-primary)_55%,transparent)]" />
               <h2 className="font-display text-base font-semibold tracking-tight">Active sprint</h2>
             </div>
             <p className="mt-1 text-sm">
