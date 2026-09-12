@@ -41,15 +41,15 @@ export default async function MyWorkPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="page-title">My work</h1>
-        <p className="text-sm opacity-60">Assigned issues and watches across projects.</p>
+        <h1 className="page-title neon-text">My work</h1>
+        <p className="page-subtitle">Assigned issues and watches across projects.</p>
       </div>
 
-      <div className="panel">
+      <div className="panel neon-ring">
         <div className="panel-body">
           <h2 className="font-display text-lg font-semibold tracking-tight">Assigned to me</h2>
-          <div className="overflow-x-auto">
-            <table className="table table-sm">
+          <div className="mt-3 overflow-x-auto">
+            <table className="table table-sm table-modern">
               <thead>
                 <tr>
                   <th>Key</th>
@@ -109,17 +109,20 @@ export default async function MyWorkPage() {
       <div className="panel">
         <div className="panel-body">
           <h2 className="font-display text-lg font-semibold tracking-tight">Watching</h2>
-          <ul className="space-y-2">
+          <ul className="mt-3 space-y-2">
             {watching.length === 0 && (
-              <li className="text-sm opacity-50">You are not watching other open issues.</li>
+              <li className="text-sm text-base-content/50">You are not watching other open issues.</li>
             )}
             {watching.map((w) => (
-              <li key={w.taskId} className="flex justify-between gap-3 text-sm">
+              <li
+                key={w.taskId}
+                className="flex justify-between gap-3 rounded-xl border border-primary/10 bg-base-100/35 px-3 py-2.5 text-sm backdrop-blur-sm"
+              >
                 <Link
                   href={`/projects/${w.task.project.id}/issues/${w.task.id}`}
                   className="link link-hover"
                 >
-                  <span className="font-mono text-xs opacity-60">{w.task.issueKey}</span>{" "}
+                  <span className="font-mono text-xs text-primary/70">{w.task.issueKey}</span>{" "}
                   {w.task.title}
                 </Link>
                 <StatusBadge status={w.task.status} />

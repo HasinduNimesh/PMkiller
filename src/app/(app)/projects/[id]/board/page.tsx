@@ -46,20 +46,22 @@ export default async function BoardPage({
       />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">Kanban board</h1>
-          <p className="text-sm opacity-60">Drag cards across columns · Jira-style workflow</p>
+          <h1 className="page-title neon-text">Kanban board</h1>
+          <p className="page-subtitle">Drag cards across columns · Jira-style workflow</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 rounded-full border border-primary/20 bg-base-100/50 p-1 backdrop-blur-md">
           <a
             href={`/projects/${id}/board?sprint=all`}
-            className={`btn btn-sm ${!sprintId ? "btn-primary" : "btn-outline"}`}
+            className={!sprintId ? "nav-pill nav-pill-active" : "nav-pill"}
           >
             All sprints
           </a>
           {activeSprint && (
             <a
               href={`/projects/${id}/board`}
-              className={`btn btn-sm ${sprintId === activeSprint.id ? "btn-primary" : "btn-outline"}`}
+              className={
+                sprintId === activeSprint.id ? "nav-pill nav-pill-active" : "nav-pill"
+              }
             >
               {activeSprint.name}
             </a>

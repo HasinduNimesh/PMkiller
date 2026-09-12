@@ -93,7 +93,7 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Dashboard</h1>
+          <h1 className="page-title neon-text">Dashboard</h1>
           <p className="page-subtitle">
             Welcome back, {session.user.name?.split(" ")[0] ?? "there"}.
           </p>
@@ -224,7 +224,7 @@ export default async function DashboardPage() {
                   {myTasks.map((t) => (
                     <li
                       key={t.id}
-                      className="flex items-start justify-between gap-3 rounded-xl border border-base-300/40 bg-base-200/30 px-3 py-2.5"
+                      className="flex items-start justify-between gap-3 rounded-xl border border-primary/15 bg-base-100/40 px-3 py-2.5 backdrop-blur-sm transition hover:border-primary/35 hover:shadow-[0_0_18px_color-mix(in_oklab,var(--color-primary)_14%,transparent)]"
                     >
                       <div>
                         <Link
@@ -243,24 +243,22 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-warning/25 bg-warning/10 p-4">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
-              <div>
-                <h3 className="font-display font-semibold tracking-tight">Critical path</h3>
-                {criticalTasks.length === 0 ? (
-                  <div className="mt-1 text-sm text-base-content/60">No open critical tasks.</div>
-                ) : (
-                  <ul className="mt-2 space-y-1.5 text-sm">
-                    {criticalTasks.map((t) => (
-                      <li key={t.id}>
-                        <span className="font-medium">{t.title}</span>
-                        <span className="text-base-content/50"> · {t.project.name}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+          <div className="callout callout-warn">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+            <div>
+              <h3 className="font-display font-semibold tracking-tight">Critical path</h3>
+              {criticalTasks.length === 0 ? (
+                <div className="mt-1 text-sm opacity-80">No open critical tasks.</div>
+              ) : (
+                <ul className="mt-2 space-y-1.5 text-sm">
+                  {criticalTasks.map((t) => (
+                    <li key={t.id}>
+                      <span className="font-medium">{t.title}</span>
+                      <span className="opacity-70"> · {t.project.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </div>

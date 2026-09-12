@@ -125,6 +125,7 @@
   background: color-mix(in oklab, var(--color-base-200) 55%, transparent);
   border: 1px solid color-mix(in oklab, var(--color-primary) 12%, var(--glass-border));
   backdrop-filter: blur(10px);
+  box-shadow: inset 0 0 40px color-mix(in oklab, var(--color-primary) 4%, transparent);
 }
 
 .kanban-card {
@@ -241,10 +242,13 @@
 
 .copy-block {
   @apply overflow-hidden rounded-2xl;
-  background: color-mix(in oklab, var(--color-base-200) 55%, transparent);
-  border: 1px solid color-mix(in oklab, var(--color-primary) 18%, var(--glass-border));
-  backdrop-filter: blur(14px);
-  box-shadow: 0 0 20px color-mix(in oklab, var(--color-primary) 8%, transparent);
+  background: color-mix(in oklab, var(--color-base-200) 45%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-primary) 22%, var(--glass-border));
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  box-shadow:
+    0 0 28px color-mix(in oklab, var(--color-primary) 12%, transparent),
+    0 1px 0 color-mix(in oklab, white 20%, transparent) inset;
 }
 
 @keyframes marketing-fade-up {
