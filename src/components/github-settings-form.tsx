@@ -250,7 +250,7 @@ export function GithubSettingsForm({
               </label>
 
               {secret && (
-                <div role="alert" className="alert alert-warning text-sm">
+                <div role="alert" className="callout callout-warn">
                   <div>
                     <div className="font-semibold">Copy webhook secret into GitHub:</div>
                     <code className="mt-1 block break-all select-all">{secret}</code>
@@ -259,12 +259,12 @@ export function GithubSettingsForm({
               )}
 
               {error && (
-                <div role="alert" className="alert alert-error text-sm">
+                <div role="alert" className="callout callout-error">
                   <span>{error}</span>
                 </div>
               )}
               {msg && !secret && (
-                <div role="alert" className="alert alert-success text-sm">
+                <div role="alert" className="callout callout-ok">
                   <span>{msg}</span>
                 </div>
               )}

@@ -50,7 +50,7 @@ export default function RegisterPage() {
       </fieldset>
 
       {error && (
-        <div role="alert" className="alert alert-error rounded-xl text-sm">
+        <div role="alert" className="callout callout-error">
           <span>{error}</span>
         </div>
       )}

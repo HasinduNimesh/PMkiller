@@ -114,13 +114,13 @@ export default async function ProjectDetailPage({
       </div>
 
       {atRisk ? (
-        <div role="alert" className="alert alert-error">
+        <div role="alert" className="callout callout-error">
           <span>
             CPM finish {formatDate(cpmEnd)} is past the deadline {formatDate(project.deadline)}.
           </span>
         </div>
       ) : cpmEnd ? (
-        <div role="alert" className="alert alert-success">
+        <div role="alert" className="callout callout-ok">
           <span>CPM finish {formatDate(cpmEnd)} — on track vs deadline.</span>
         </div>
       ) : null}

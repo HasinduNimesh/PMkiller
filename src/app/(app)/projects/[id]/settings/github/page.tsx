@@ -140,7 +140,7 @@ export default async function GithubRepoPickerPage({
       </div>
 
       {listed.error && (
-        <div className="alert alert-error text-sm">
+        <div className="callout callout-error">
           <span>{listed.error}</span>
         </div>
       )}

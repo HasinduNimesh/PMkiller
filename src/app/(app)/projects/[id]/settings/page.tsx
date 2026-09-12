@@ -74,12 +74,12 @@ export default async function ProjectSettingsPage({
       </div>
 
       {sp.linked && (
-        <div className="alert alert-success text-sm">
+        <div className="callout callout-ok">
           <span>GitHub repository connected and webhook created.</span>
         </div>
       )}
       {sp.error && (
-        <div className="alert alert-error text-sm">
+        <div className="callout callout-error">
           <span>GitHub connection failed ({sp.error}). Try again.</span>
         </div>
       )}

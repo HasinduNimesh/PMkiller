@@ -59,7 +59,7 @@ export default async function SchedulePage({
       </div>
 
       {atRisk ? (
-        <div role="alert" className="alert alert-error">
+        <div role="alert" className="callout callout-error">
           <span>
             Deadline {formatDate(project.deadline)} · CPM end {formatDate(cpmEnd)} (past deadline)
           </span>

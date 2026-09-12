@@ -275,7 +275,7 @@ export function TaskCreateForm({
           )}
 
           {error && (
-            <div role="alert" className="alert alert-error sm:col-span-2 lg:col-span-3 text-sm">
+            <div role="alert" className="callout callout-error sm:col-span-2 lg:col-span-3">
               <span>{error}</span>
             </div>
           )}

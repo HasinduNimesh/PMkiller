@@ -152,6 +152,101 @@
   box-shadow: 0 0 22px color-mix(in oklab, var(--color-primary) 28%, transparent);
 }
 
+/* High-contrast callouts — daisy warning/success text can be illegible on tinted bgs */
+.callout {
+  @apply flex gap-3 rounded-2xl border px-4 py-3.5 text-sm leading-relaxed;
+  backdrop-filter: blur(12px);
+}
+
+.callout-warn {
+  border-color: color-mix(in oklab, #b45309 45%, transparent);
+  background: color-mix(in oklab, #fff7ed 92%, var(--color-base-100));
+  color: #7c2d12;
+  box-shadow: 0 0 24px color-mix(in oklab, #f59e0b 18%, transparent);
+}
+
+.callout-warn code {
+  @apply rounded-md px-1.5 py-0.5 font-mono text-[0.8em];
+  background: color-mix(in oklab, #fed7aa 80%, white);
+  color: #9a3412;
+}
+
+.callout-ok {
+  border-color: color-mix(in oklab, #15803d 40%, transparent);
+  background: color-mix(in oklab, #f0fdf4 92%, var(--color-base-100));
+  color: #14532d;
+  box-shadow: 0 0 24px color-mix(in oklab, #22c55e 16%, transparent);
+}
+
+.callout-ok code {
+  @apply rounded-md px-1.5 py-0.5 font-mono text-[0.8em];
+  background: color-mix(in oklab, #bbf7d0 75%, white);
+  color: #166534;
+}
+
+.callout-error {
+  border-color: color-mix(in oklab, #b91c1c 45%, transparent);
+  background: color-mix(in oklab, #fef2f2 92%, var(--color-base-100));
+  color: #7f1d1d;
+  box-shadow: 0 0 24px color-mix(in oklab, #ef4444 16%, transparent);
+}
+
+.callout-error code {
+  @apply rounded-md px-1.5 py-0.5 font-mono text-[0.8em];
+  background: color-mix(in oklab, #fecaca 80%, white);
+  color: #991b1b;
+}
+
+[data-theme="business"] .callout-warn {
+  background: color-mix(in oklab, #431407 88%, transparent);
+  border-color: color-mix(in oklab, #f59e0b 50%, transparent);
+  color: #ffedd5;
+  box-shadow: 0 0 28px color-mix(in oklab, #f59e0b 22%, transparent);
+}
+
+[data-theme="business"] .callout-warn code {
+  background: color-mix(in oklab, #9a3412 55%, transparent);
+  color: #ffedd5;
+}
+
+[data-theme="business"] .callout-ok {
+  background: color-mix(in oklab, #052e16 88%, transparent);
+  border-color: color-mix(in oklab, #22c55e 45%, transparent);
+  color: #dcfce7;
+  box-shadow: 0 0 28px color-mix(in oklab, #22c55e 20%, transparent);
+}
+
+[data-theme="business"] .callout-ok code {
+  background: color-mix(in oklab, #166534 50%, transparent);
+  color: #dcfce7;
+}
+
+[data-theme="business"] .callout-error {
+  background: color-mix(in oklab, #450a0a 88%, transparent);
+  border-color: color-mix(in oklab, #ef4444 50%, transparent);
+  color: #fee2e2;
+  box-shadow: 0 0 28px color-mix(in oklab, #ef4444 22%, transparent);
+}
+
+[data-theme="business"] .callout-error code {
+  background: color-mix(in oklab, #991b1b 50%, transparent);
+  color: #fee2e2;
+}
+
+.sidebar-link-active {
+  @apply text-primary;
+  background: color-mix(in oklab, var(--color-primary) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-primary) 28%, transparent);
+}
+
+.copy-block {
+  @apply overflow-hidden rounded-2xl;
+  background: color-mix(in oklab, var(--color-base-200) 55%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-primary) 18%, var(--glass-border));
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0 20px color-mix(in oklab, var(--color-primary) 8%, transparent);
+}
+
 @keyframes marketing-fade-up {
   from {
     opacity: 0;

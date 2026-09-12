@@ -4,14 +4,8 @@ import { logoutAction } from "@/app/actions/auth";
 import { canManageUsers } from "@/lib/rbac";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { GlobalSearch } from "@/components/global-search";
-import {
-  LayoutDashboard,
-  FolderKanban,
-  Users,
-  LogOut,
-  ListTodo,
-  Puzzle,
-} from "lucide-react";
+import { SidebarNav } from "@/components/sidebar-nav";
+import { LogOut } from "lucide-react";
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -88,30 +82,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           {session && (
-            <nav className="flex flex-1 flex-col gap-1 px-3 py-2">
-              <Link href="/dashboard" className="sidebar-link">
-                <LayoutDashboard className="h-4 w-4 opacity-70" />
-                Dashboard
-              </Link>
-              <Link href="/my-work" className="sidebar-link">
-                <ListTodo className="h-4 w-4 opacity-70" />
-                My work
-              </Link>
-              <Link href="/projects" className="sidebar-link">
-                <FolderKanban className="h-4 w-4 opacity-70" />
-                Projects
-              </Link>
-              <Link href="/integrations" className="sidebar-link">
-                <Puzzle className="h-4 w-4 opacity-70" />
-                Integrations
-              </Link>
-              {canManageUsers(session.user.role) && (
-                <Link href="/admin/users" className="sidebar-link">
-                  <Users className="h-4 w-4 opacity-70" />
-                  Users & roles
-                </Link>
-              )}
-            </nav>
+            <SidebarNav canManageUsers={canManageUsers(session.user.role)} />
           )}
 
           {session && (

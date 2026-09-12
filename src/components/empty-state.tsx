@@ -15,7 +15,7 @@ export function EmptyState({
   actionLabel?: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-base-300/80 bg-base-100/40 px-6 py-14 text-center">
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-primary/25 bg-base-100/50 backdrop-blur-md shadow-[0_0_32px_color-mix(in_oklab,var(--color-primary)_8%,transparent)] px-6 py-14 text-center">
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
         <Icon className="h-5 w-5" />
       </div>

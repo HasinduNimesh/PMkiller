@@ -73,7 +73,7 @@ export default function NewProjectPage() {
           </div>
 
           {error && (
-            <div role="alert" className="alert alert-error text-sm">
+            <div role="alert" className="callout callout-error">
               <span>{error}</span>
             </div>
           )}

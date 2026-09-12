@@ -133,12 +133,12 @@ export function ProjectMembersPanel({
         )}
 
         {error && (
-          <div role="alert" className="alert alert-error text-sm">
+          <div role="alert" className="callout callout-error">
             <span>{error}</span>
           </div>
         )}
         {message && !error && (
-          <div role="alert" className="alert alert-success text-sm">
+          <div role="alert" className="callout callout-ok">
             <span>{message}</span>
           </div>
         )}

@@ -65,12 +65,12 @@ export function InviteUserForm() {
         </div>
 
         {error && (
-          <div role="alert" className="alert alert-error text-sm">
+          <div role="alert" className="callout callout-error">
             <span>{error}</span>
           </div>
         )}
         {message && (
-          <div role="alert" className="alert alert-success text-sm">
+          <div role="alert" className="callout callout-ok">
             <span>{message}</span>
           </div>
         )}

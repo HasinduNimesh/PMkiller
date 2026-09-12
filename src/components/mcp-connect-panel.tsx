@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, Terminal, Sparkles, Code2 } from "lucide-react";
+import { AlertTriangle, Check, CheckCircle2, Copy, Terminal, Sparkles, Code2 } from "lucide-react";
 
 type MethodId = "cursor" | "claude-code" | "claude-desktop";
 
@@ -9,9 +9,9 @@ function CopyBlock({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-base-300/60 bg-base-200/40">
-      <div className="flex items-center justify-between gap-2 border-b border-base-300/50 px-3 py-2">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-base-content/45">
+    <div className="copy-block">
+      <div className="flex items-center justify-between gap-2 border-b border-primary/10 px-3 py-2">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-base-content/55">
           {label}
         </span>
         <button
@@ -31,7 +31,7 @@ function CopyBlock({ label, value }: { label: string; value: string }) {
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <pre className="overflow-x-auto p-3 text-xs leading-relaxed text-base-content/80">
+      <pre className="overflow-x-auto p-3 text-xs leading-relaxed text-base-content/85">
         <code>{value}</code>
       </pre>
     </div>
@@ -130,26 +130,23 @@ export function McpConnectPanel({
 
   return (
     <div className="space-y-6">
-      <div
-        className={`rounded-2xl border px-4 py-3 text-sm ${
-          apiConfigured
-            ? "border-success/30 bg-success/10 text-success"
-            : "border-warning/30 bg-warning/10 text-warning"
-        }`}
-      >
-        {apiConfigured ? (
+      {apiConfigured ? (
+        <div className="callout callout-ok" role="status">
+          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
           <span>
-            MCP API is enabled on this deployment. Use your server <code className="font-mono">MCP_API_KEY</code>{" "}
-            in the client config below.
+            MCP API is enabled on this deployment. Use your server{" "}
+            <code>MCP_API_KEY</code> in the client config below.
           </span>
-        ) : (
+        </div>
+      ) : (
+        <div className="callout callout-warn" role="alert">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
           <span>
-            Set <code className="font-mono">MCP_API_KEY</code> and{" "}
-            <code className="font-mono">MCP_ACT_AS_EMAIL</code> on the server (Vercel env), then redeploy
-            before connecting a client.
+            Set <code>MCP_API_KEY</code> and <code>MCP_ACT_AS_EMAIL</code> on the server (Vercel
+            env), then redeploy before connecting a client.
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-3">
         {methods.map((m) => {
@@ -163,12 +160,12 @@ export function McpConnectPanel({
               className={`rounded-2xl border px-4 py-4 text-left transition ${
                 active
                   ? "border-primary bg-primary text-primary-content shadow-[0_0_28px_color-mix(in_oklab,var(--color-primary)_40%,transparent)]"
-                  : "glass border-primary/20 hover:shadow-[0_0_24px_color-mix(in_oklab,var(--color-primary)_20%,transparent)]"
+                  : "glass border-primary/25 hover:shadow-[0_0_24px_color-mix(in_oklab,var(--color-primary)_20%,transparent)]"
               }`}
             >
               <Icon className={`mb-2 h-5 w-5 ${active ? "opacity-90" : "text-primary"}`} />
               <div className="font-display text-base font-semibold tracking-tight">{m.title}</div>
-              <div className={`mt-0.5 text-xs ${active ? "opacity-70" : "text-base-content/50"}`}>
+              <div className={`mt-0.5 text-xs ${active ? "text-primary-content/80" : "text-base-content/55"}`}>
                 {m.subtitle}
               </div>
             </button>
@@ -176,21 +173,22 @@ export function McpConnectPanel({
         })}
       </div>
 
-      <div className="panel">
+      <div className="panel neon-ring">
         <div className="panel-body space-y-4">
           {method === "cursor" && (
             <>
               <div>
                 <h2 className="font-display text-lg font-semibold tracking-tight">Connect Cursor</h2>
-                <p className="mt-1 text-sm text-base-content/55">
+                <p className="mt-1 text-sm text-base-content/60">
                   Add ProjManager as an MCP server so Agent Mode can plan sprints, create issues, and
                   assign work.
                 </p>
               </div>
-              <ol className="list-decimal space-y-2 pl-5 text-sm text-base-content/70">
-                <li>Clone this repo (needs <code className="font-mono">mcp/server.ts</code>).</li>
+              <ol className="list-decimal space-y-2 pl-5 text-sm text-base-content/75">
+                <li>Clone this repo (needs <code className="font-mono text-primary">mcp/server.ts</code>).</li>
                 <li>
-                  Open <strong>Cursor Settings → MCP</strong> (or project <code className="font-mono">.cursor/mcp.json</code>).
+                  Open <strong>Cursor Settings → MCP</strong> (or project{" "}
+                  <code className="font-mono text-primary">.cursor/mcp.json</code>).
                 </li>
                 <li>Paste the JSON below, set repo path + API key, then restart MCP / reload Cursor.</li>
               </ol>
@@ -203,18 +201,19 @@ export function McpConnectPanel({
             <>
               <div>
                 <h2 className="font-display text-lg font-semibold tracking-tight">Connect Claude Code</h2>
-                <p className="mt-1 text-sm text-base-content/55">
-                  Use project <code className="font-mono">.mcp.json</code> or add via CLI so Claude Code can
-                  call the same scrum tools.
+                <p className="mt-1 text-sm text-base-content/60">
+                  Use project <code className="font-mono text-primary">.mcp.json</code> or add via CLI so
+                  Claude Code can call the same scrum tools.
                 </p>
               </div>
-              <ol className="list-decimal space-y-2 pl-5 text-sm text-base-content/70">
+              <ol className="list-decimal space-y-2 pl-5 text-sm text-base-content/75">
                 <li>From the ProjManager repo root, add a user-scoped or project-scoped server.</li>
                 <li>
-                  Prefer CLI, or create <code className="font-mono">.mcp.json</code> and restart Claude Code.
+                  Prefer CLI, or create <code className="font-mono text-primary">.mcp.json</code> and
+                  restart Claude Code.
                 </li>
                 <li>
-                  Verify with <code className="font-mono">claude mcp list</code>.
+                  Verify with <code className="font-mono text-primary">claude mcp list</code>.
                 </li>
               </ol>
               <CopyBlock label="CLI (user scope)" value={claudeCli} />
@@ -225,20 +224,31 @@ export function McpConnectPanel({
           {method === "claude-desktop" && (
             <>
               <div>
-                <h2 className="font-display text-lg font-semibold tracking-tight">Connect Claude Desktop</h2>
-                <p className="mt-1 text-sm text-base-content/55">
+                <h2 className="font-display text-lg font-semibold tracking-tight">
+                  Connect Claude Desktop
+                </h2>
+                <p className="mt-1 text-sm text-base-content/60">
                   Claude Desktop uses a separate config file from Claude Code.
                 </p>
               </div>
-              <ol className="list-decimal space-y-2 pl-5 text-sm text-base-content/70">
+              <ol className="list-decimal space-y-2 pl-5 text-sm text-base-content/75">
                 <li>
-                  Edit <code className="font-mono">claude_desktop_config.json</code>:
+                  Edit <code className="font-mono text-primary">claude_desktop_config.json</code>:
                   <ul className="mt-1 list-disc pl-5">
-                    <li>macOS: <code className="font-mono">~/Library/Application Support/Claude/</code></li>
-                    <li>Windows: <code className="font-mono">%APPDATA%\Claude\</code></li>
+                    <li>
+                      macOS:{" "}
+                      <code className="font-mono text-primary">
+                        ~/Library/Application Support/Claude/
+                      </code>
+                    </li>
+                    <li>
+                      Windows: <code className="font-mono text-primary">%APPDATA%\Claude\</code>
+                    </li>
                   </ul>
                 </li>
-                <li>Merge the JSON below under <code className="font-mono">mcpServers</code>.</li>
+                <li>
+                  Merge the JSON below under <code className="font-mono text-primary">mcpServers</code>.
+                </li>
                 <li>Fully quit and reopen Claude Desktop.</li>
               </ol>
               <CopyBlock label="claude_desktop_config.json" value={claudeCodeJson} />
@@ -246,13 +256,17 @@ export function McpConnectPanel({
             </>
           )}
 
-          <div className="rounded-xl bg-base-200/60 px-4 py-3 text-xs text-base-content/55">
-            Tools available after connect: <code className="font-mono">list_projects</code>,{" "}
-            <code className="font-mono">list_issues</code>, <code className="font-mono">create_issue</code>,{" "}
-            <code className="font-mono">update_issue</code>, <code className="font-mono">list_sprints</code>,{" "}
-            <code className="font-mono">create_sprint</code>, <code className="font-mono">start_sprint</code>,{" "}
-            <code className="font-mono">complete_sprint</code>, <code className="font-mono">my_work</code>,
-            prompt <code className="font-mono">plan_sprint</code>.
+          <div className="rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-xs leading-relaxed text-base-content/70">
+            Tools available after connect: <code className="font-mono text-primary">list_projects</code>,{" "}
+            <code className="font-mono text-primary">list_issues</code>,{" "}
+            <code className="font-mono text-primary">create_issue</code>,{" "}
+            <code className="font-mono text-primary">update_issue</code>,{" "}
+            <code className="font-mono text-primary">list_sprints</code>,{" "}
+            <code className="font-mono text-primary">create_sprint</code>,{" "}
+            <code className="font-mono text-primary">start_sprint</code>,{" "}
+            <code className="font-mono text-primary">complete_sprint</code>,{" "}
+            <code className="font-mono text-primary">my_work</code>, prompt{" "}
+            <code className="font-mono text-primary">plan_sprint</code>.
           </div>
         </div>
       </div>
