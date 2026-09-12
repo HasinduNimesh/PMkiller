@@ -12,7 +12,7 @@ export type TokenRow = {
   createdAt: string;
 };
 
-function CopyOnce({ value }: { value: string }) {
+function CopyOnce({ value, label = "Copy token" }: { value: string; label?: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -29,7 +29,7 @@ function CopyOnce({ value }: { value: string }) {
       }}
     >
       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-      {copied ? "Copied" : "Copy token"}
+      {copied ? "Copied" : label}
     </button>
   );
 }
@@ -90,8 +90,8 @@ export function ApiTokenManager({
               {freshToken}
             </pre>
             <div className="flex flex-wrap gap-2">
-              <CopyOnce value={freshToken} />
-              {cursorJson && <CopyOnce value={cursorJson} />}
+              <CopyOnce value={freshToken} label="Copy token" />
+              {cursorJson && <CopyOnce value={cursorJson} label="Copy Cursor JSON" />}
             </div>
             <p className="text-xs opacity-80">
               Paste as <code>MCP_API_KEY</code> in Cursor. Do not set <code>MCP_ACT_AS_EMAIL</code>.
@@ -109,7 +109,9 @@ export function ApiTokenManager({
           className="flex flex-wrap items-end gap-3"
           onSubmit={(e) => {
             e.preventDefault();
-            const fd = new FormData(e.currentTarget);
+            // Capture before await — React nulls e.currentTarget after the event
+            const form = e.currentTarget;
+            const fd = new FormData(form);
             setError(null);
             start(async () => {
               const res = await createApiTokenAction(fd);
@@ -119,7 +121,7 @@ export function ApiTokenManager({
               }
               if ("token" in res && res.token) {
                 setFreshToken(res.token);
-                e.currentTarget.reset();
+                form.reset();
               }
             });
           }}
