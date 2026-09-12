@@ -44,7 +44,7 @@ export function ProjectNav({
           {projectName}
         </span>
       </div>
-      <div className="flex flex-wrap gap-1 rounded-2xl border border-base-300/50 bg-base-100/70 p-1.5 backdrop-blur-sm">
+      <div className="flex flex-wrap gap-1 rounded-2xl border border-primary/20 bg-base-100/55 p-1.5 backdrop-blur-xl shadow-[0_0_28px_color-mix(in_oklab,var(--color-primary)_10%,transparent)]">
         {links.map((link) => {
           const key = link.suffix.slice(1) || "overview";
           const href = `/projects/${projectId}${link.suffix}`;

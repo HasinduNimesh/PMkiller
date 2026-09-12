@@ -8,23 +8,26 @@
   --font-display: var(--font-display);
 }
 
-/* Modern density / radius on top of daisyUI themes */
 :root,
 [data-theme] {
   --radius-box: 1rem;
   --radius-field: 0.75rem;
   --radius-selector: 0.75rem;
+  --neon: color-mix(in oklab, var(--color-primary) 85%, white);
+  --neon-soft: color-mix(in oklab, var(--color-primary) 35%, transparent);
+  --glass: color-mix(in oklab, var(--color-base-100) 72%, transparent);
+  --glass-border: color-mix(in oklab, var(--color-base-content) 10%, transparent);
 }
 
 .font-display {
   font-family: var(--font-display), ui-serif, Georgia, serif;
 }
 
-/* App atmosphere — soft wash instead of flat base-200 */
 .app-canvas {
   background:
-    radial-gradient(1200px 600px at 0% -10%, color-mix(in oklab, var(--color-primary) 12%, transparent), transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--color-secondary) 10%, transparent), transparent 50%),
+    radial-gradient(1100px 520px at 8% -8%, color-mix(in oklab, var(--color-primary) 22%, transparent), transparent 58%),
+    radial-gradient(900px 480px at 92% 4%, color-mix(in oklab, var(--color-secondary) 16%, transparent), transparent 52%),
+    radial-gradient(700px 400px at 50% 100%, color-mix(in oklab, var(--color-primary) 10%, transparent), transparent 60%),
     var(--color-base-200);
 }
 
@@ -40,8 +43,36 @@
   @apply mt-1.5 max-w-2xl text-sm leading-relaxed text-base-content/55;
 }
 
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px) saturate(1.35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  box-shadow:
+    0 1px 0 color-mix(in oklab, white 35%, transparent) inset,
+    0 12px 40px color-mix(in oklab, var(--color-base-content) 6%, transparent);
+}
+
+.neon-ring {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-primary) 35%, transparent),
+    0 0 24px color-mix(in oklab, var(--color-primary) 22%, transparent),
+    0 1px 0 color-mix(in oklab, white 30%, transparent) inset;
+}
+
+.neon-text {
+  text-shadow: 0 0 24px color-mix(in oklab, var(--color-primary) 45%, transparent);
+}
+
 .panel {
-  @apply rounded-2xl border border-base-300/60 bg-base-100/90 shadow-[0_1px_0_rgba(0,0,0,0.03)] backdrop-blur-sm;
+  @apply rounded-2xl;
+  background: var(--glass);
+  border: 1px solid color-mix(in oklab, var(--color-primary) 16%, var(--glass-border));
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  box-shadow:
+    0 1px 0 color-mix(in oklab, white 28%, transparent) inset,
+    0 10px 32px color-mix(in oklab, var(--color-base-content) 5%, transparent);
 }
 
 .panel-body {
@@ -49,11 +80,20 @@
 }
 
 .panel-muted {
-  @apply rounded-2xl border border-base-300/50 bg-base-200/50;
+  @apply rounded-2xl border border-base-300/40;
+  background: color-mix(in oklab, var(--color-base-200) 65%, transparent);
+  backdrop-filter: blur(12px);
 }
 
 .metric {
-  @apply rounded-2xl border border-base-300/60 bg-base-100/90 p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)];
+  @apply rounded-2xl p-5;
+  background: var(--glass);
+  border: 1px solid color-mix(in oklab, var(--color-primary) 14%, var(--glass-border));
+  backdrop-filter: blur(16px) saturate(1.25);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+  box-shadow:
+    0 0 28px color-mix(in oklab, var(--color-primary) 8%, transparent),
+    0 1px 0 color-mix(in oklab, white 25%, transparent) inset;
 }
 
 .metric-label {
@@ -66,25 +106,38 @@
 
 .nav-pill {
   @apply rounded-full px-3.5 py-1.5 text-sm font-medium text-base-content/60 transition
-    hover:bg-base-200 hover:text-base-content;
+    hover:bg-base-200/80 hover:text-base-content;
 }
 
 .nav-pill-active {
-  @apply bg-base-content text-base-100 hover:bg-base-content hover:text-base-100;
+  @apply text-primary-content;
+  background: color-mix(in oklab, var(--color-primary) 92%, black);
+  box-shadow: 0 0 20px color-mix(in oklab, var(--color-primary) 40%, transparent);
 }
 
 .sidebar-link {
   @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-base-content/70 transition
-    hover:bg-base-200/80 hover:text-base-content;
+    hover:bg-base-200/70 hover:text-base-content;
 }
 
 .kanban-column {
-  @apply flex min-h-[28rem] flex-col rounded-2xl border border-base-300/50 bg-base-200/40 p-2.5;
+  @apply flex min-h-[28rem] flex-col rounded-2xl p-2.5;
+  background: color-mix(in oklab, var(--color-base-200) 55%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-primary) 12%, var(--glass-border));
+  backdrop-filter: blur(10px);
 }
 
 .kanban-card {
-  @apply rounded-xl border border-base-300/60 bg-base-100 p-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]
-    transition hover:border-primary/30 hover:shadow-md;
+  @apply rounded-xl p-3 transition;
+  background: var(--glass);
+  border: 1px solid color-mix(in oklab, var(--color-base-content) 8%, transparent);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--color-base-content) 4%, transparent);
+}
+
+.kanban-card:hover {
+  border-color: color-mix(in oklab, var(--color-primary) 45%, transparent);
+  box-shadow: 0 0 22px color-mix(in oklab, var(--color-primary) 18%, transparent);
 }
 
 .table-modern :where(thead th) {
@@ -93,6 +146,10 @@
 
 .badge-soft {
   @apply badge badge-sm border-0 font-medium;
+}
+
+.btn-primary {
+  box-shadow: 0 0 22px color-mix(in oklab, var(--color-primary) 28%, transparent);
 }
 
 @keyframes marketing-fade-up {
@@ -128,6 +185,16 @@
   }
 }
 
+@keyframes neon-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .marketing-fade-up {
   animation: marketing-fade-up 0.7s ease-out both;
 }
@@ -145,4 +212,8 @@
 }
 .marketing-card:nth-child(2) {
   animation-delay: 0.45s;
+}
+
+.neon-orb {
+  animation: neon-pulse 5s ease-in-out infinite;
 }

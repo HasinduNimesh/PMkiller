@@ -162,8 +162,8 @@ export function McpConnectPanel({
               onClick={() => setMethod(m.id)}
               className={`rounded-2xl border px-4 py-4 text-left transition ${
                 active
-                  ? "border-base-content bg-base-content text-base-100"
-                  : "border-base-300/60 bg-base-100/80 hover:border-base-content/30"
+                  ? "border-primary bg-primary text-primary-content shadow-[0_0_28px_color-mix(in_oklab,var(--color-primary)_40%,transparent)]"
+                  : "glass border-primary/20 hover:shadow-[0_0_24px_color-mix(in_oklab,var(--color-primary)_20%,transparent)]"
               }`}
             >
               <Icon className={`mb-2 h-5 w-5 ${active ? "opacity-90" : "text-primary"}`} />
