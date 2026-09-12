@@ -13,7 +13,7 @@ export function RecalculateButton({ projectId }: { projectId: string }) {
       <button
         type="button"
         disabled={pending}
-        className="btn btn-outline btn-sm gap-1"
+        className="btn btn-outline btn-sm gap-1 rounded-xl border-primary/30"
         onClick={() => {
           startTransition(async () => {
             const result = await recalculateCpmAction(projectId);

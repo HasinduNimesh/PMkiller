@@ -82,31 +82,34 @@ export default async function ProjectDetailPage({
         active="overview"
       />
 
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="page-header items-start">
         <div className="max-w-2xl">
-          <h1 className="font-display text-3xl font-semibold tracking-tight">{project.name}</h1>
+          <h1 className="page-title neon-text">{project.name}</h1>
           {project.description && (
-            <p className="mt-2 text-sm text-base-content/70">{project.description}</p>
+            <p className="page-subtitle">{project.description}</p>
           )}
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <StatusBadge status={project.status} />
             {activeSprint && (
-              <span className="badge badge-primary badge-outline">
+              <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary shadow-[0_0_14px_color-mix(in_oklab,var(--color-primary)_25%,transparent)]">
                 Sprint: {activeSprint.name}
               </span>
             )}
-            <span className="text-sm text-base-content/60">
+            <span className="text-sm text-base-content/55">
               {formatDate(project.startDate)} → {formatDate(project.deadline)}
             </span>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <RecalculateButton projectId={project.id} />
-          <Link href={`/projects/${project.id}/board`} className="btn btn-primary btn-sm gap-1">
+          <Link href={`/projects/${project.id}/board`} className="btn btn-primary btn-sm gap-1 rounded-xl">
             <Columns3 className="h-4 w-4" />
             Board
           </Link>
-          <Link href={`/projects/${project.id}/backlog`} className="btn btn-outline btn-sm gap-1">
+          <Link
+            href={`/projects/${project.id}/backlog`}
+            className="btn btn-outline btn-sm gap-1 rounded-xl border-primary/30"
+          >
             <ListTodo className="h-4 w-4" />
             Backlog
           </Link>
@@ -145,8 +148,8 @@ export default async function ProjectDetailPage({
       )}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <div className="panel md:col-span-2 xl:col-span-1">
-          <div className="panel-body items-center text-center">
+        <div className="metric neon-ring md:col-span-2 xl:col-span-1">
+          <div className="flex flex-col items-center text-center">
             <div
               className="radial-progress text-primary"
               style={{ "--value": pct, "--size": "5rem" } as React.CSSProperties}
@@ -154,18 +157,16 @@ export default async function ProjectDetailPage({
             >
               {pct}%
             </div>
-            <p className="text-sm text-base-content/60">
+            <p className="mt-3 text-sm text-base-content/55">
               {done}/{total} issues done
             </p>
           </div>
         </div>
         {(Object.keys(bySeverity) as Array<keyof typeof bySeverity>).map((key) => (
-          <div key={key} className="panel">
-            <div className="panel-body py-4">
-              <SeverityBadge severity={key} />
-              <div className="font-display text-3xl font-semibold">{bySeverity[key]}</div>
-              <div className="text-xs opacity-50">by priority</div>
-            </div>
+          <div key={key} className="metric">
+            <SeverityBadge severity={key} />
+            <div className="metric-value">{bySeverity[key]}</div>
+            <div className="mt-1 text-xs text-base-content/45">by priority</div>
           </div>
         ))}
       </div>

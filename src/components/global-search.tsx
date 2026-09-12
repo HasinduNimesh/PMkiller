@@ -82,8 +82,8 @@ export function GlobalSearch({ compact = false }: { compact?: boolean }) {
 
   return (
     <div ref={boxRef} className={`relative w-full ${compact ? "max-w-none" : "max-w-md"}`}>
-      <label className="input input-sm flex items-center gap-2 rounded-xl border-base-300/60 bg-base-200/70">
-        <Search className="h-3.5 w-3.5 shrink-0 opacity-50" />
+      <label className="input input-sm flex items-center gap-2 rounded-xl border-primary/20 bg-base-100/50 shadow-[0_0_18px_color-mix(in_oklab,var(--color-primary)_10%,transparent)] backdrop-blur-md">
+        <Search className="h-3.5 w-3.5 shrink-0 text-primary/70" />
         <input
           ref={inputRef}
           value={q}
@@ -111,11 +111,13 @@ export function GlobalSearch({ compact = false }: { compact?: boolean }) {
         {pending ? (
           <span className="loading loading-spinner loading-xs" />
         ) : (
-          <kbd className="kbd kbd-xs hidden opacity-50 sm:inline-flex">{modKey}+K</kbd>
+          <kbd className="kbd kbd-xs hidden border-primary/20 bg-base-100/60 opacity-60 sm:inline-flex">
+            {modKey}+K
+          </kbd>
         )}
       </label>
       {open && q.trim().length > 0 && (
-        <ul className="absolute z-50 mt-1.5 max-h-80 w-full overflow-auto rounded-2xl border border-base-300/60 bg-base-100 p-1.5 shadow-xl">
+        <ul className="absolute z-50 mt-1.5 max-h-80 w-full overflow-auto rounded-2xl border border-primary/20 bg-base-100/90 p-1.5 shadow-[0_0_32px_color-mix(in_oklab,var(--color-primary)_18%,transparent)] backdrop-blur-xl">
           {hits.length === 0 && searched && !pending && (
             <li className="px-3 py-4 text-center text-sm opacity-50">
               No issues match “{q.trim()}”
@@ -126,12 +128,14 @@ export function GlobalSearch({ compact = false }: { compact?: boolean }) {
               <button
                 type="button"
                 className={`flex w-full flex-col items-start rounded-xl px-3 py-2 text-left ${
-                  idx === active ? "bg-base-200" : "hover:bg-base-200/70"
+                  idx === active
+                    ? "bg-primary/15 shadow-[0_0_16px_color-mix(in_oklab,var(--color-primary)_20%,transparent)]"
+                    : "hover:bg-base-200/70"
                 }`}
                 onMouseEnter={() => setActive(idx)}
                 onClick={() => go(hit)}
               >
-                <span className="font-mono text-xs opacity-60">{hit.issueKey}</span>
+                <span className="font-mono text-xs text-primary/80">{hit.issueKey}</span>
                 <span className="text-sm font-semibold">{hit.title}</span>
                 <span className="text-[11px] opacity-50">
                   {hit.project.name} · {hit.issueType} · {hit.status.replaceAll("_", " ")}
