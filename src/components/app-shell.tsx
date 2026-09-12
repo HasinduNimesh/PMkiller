@@ -10,6 +10,7 @@ import {
   Users,
   LogOut,
   ListTodo,
+  Puzzle,
 } from "lucide-react";
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
@@ -99,6 +100,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
               <Link href="/projects" className="sidebar-link">
                 <FolderKanban className="h-4 w-4 opacity-70" />
                 Projects
+              </Link>
+              <Link href="/integrations" className="sidebar-link">
+                <Puzzle className="h-4 w-4 opacity-70" />
+                Integrations
               </Link>
               {canManageUsers(session.user.role) && (
                 <Link href="/admin/users" className="sidebar-link">

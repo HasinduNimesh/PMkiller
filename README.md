@@ -142,7 +142,9 @@ ProjManager exposes a **scrum API** at `/api/v1/*` plus a **stdio MCP server** s
 
 ### 2. Cursor MCP config
 
-Copy `mcp/cursor.mcp.example.json` into your Cursor MCP settings (or project `.cursor/mcp.json`) and set:
+In the app, open **Integrations** (sidebar) for copy-paste setups for **Cursor**, **Claude Code**, and **Claude Desktop**.
+
+Or copy `mcp/cursor.mcp.example.json` into your Cursor MCP settings and set:
 
 - `PROJMANAGER_URL` → `https://pmkiller.vercel.app` (or `http://localhost:3000`)
 - `MCP_API_KEY` → same as server
