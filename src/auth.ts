@@ -81,7 +81,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             id: user.id,
             name: user.name,
             email: user.email,
-            image: user.image,
+            // Never put avatar bytes in the Auth.js user → JWT cookie path
+            // (data: URLs exceed Vercel REQUEST_HEADER_TOO_LARGE / 494).
+            image: null,
             organizationId: membership.organizationId,
             organizationName: membership.organization.name,
             role: membership.role,
@@ -105,6 +107,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = user.role;
         token.passwordChangedAt = user.passwordChangedAt ?? null;
       }
+
+      // Strip any picture/image Auth.js may have copied onto the JWT.
+      // Oversized cookies → Vercel 494 REQUEST_HEADER_TOO_LARGE.
+      delete (token as { picture?: unknown }).picture;
+      delete (token as { image?: unknown }).image;
 
       // Always re-load membership + display name so updates apply without re-login.
       // Do not put avatar bytes in the JWT (data URLs blow the cookie size).
