@@ -5,7 +5,7 @@
       "args": ["exec", "tsx", "mcp/server.ts"],
       "cwd": "/home/hasindu/personal-repo/Proj-Manager",
       "env": {
-        "PROJMANAGER_URL": "https://pmkiller.vercel.app",
+        "PROJMANAGER_URL": "https://pmkiller.claptac.dev",
         "MCP_API_KEY": "pmk_paste-token-from-integrations"
       }
     }

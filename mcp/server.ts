@@ -4,7 +4,7 @@
  * Talks to a running ProjManager instance via /api/v1.
  *
  * Env:
- *   PROJMANAGER_URL   e.g. https://pmkiller.vercel.app  (or http://localhost:3000)
+ *   PROJMANAGER_URL   e.g. https://pmkiller.claptac.dev  (or http://localhost:3000)
  *   MCP_API_KEY       personal token from Integrations (pmk_…) — preferred
  *                     OR shared server MCP_API_KEY (legacy; then set MCP_ACT_AS_EMAIL)
  *   MCP_ACT_AS_EMAIL  only needed for legacy shared key

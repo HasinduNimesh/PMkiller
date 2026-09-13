@@ -111,7 +111,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ```
 
 3. Set `AUTH_SECRET` (`openssl rand -base64 32`) for **Production**.
-4. Optionally set `AUTH_URL` to `https://YOUR_APP.vercel.app`, or leave unset (not `localhost`).
+4. Optionally set `AUTH_URL` to `https://pmkiller.claptac.dev`, or leave unset (not `localhost`).
 5. Push schema once from your machine against Neon:
 
 ```bash
@@ -163,7 +163,7 @@ ProjManager exposes a **scrum API** at `/api/v1/*` plus a **stdio MCP server** s
 1. Log in to the app as yourself (e.g. `sumudu@claptac.dev`).
 2. Open **Integrations** → **Create token** → copy the `pmk_…` value (shown once).
 3. In Cursor MCP config set:
-   - `PROJMANAGER_URL` → `https://pmkiller.vercel.app`
+   - `PROJMANAGER_URL` → `https://pmkiller.claptac.dev`
    - `MCP_API_KEY` → that personal token  
    - Do **not** set `MCP_ACT_AS_EMAIL` — the token already carries your user + role.
 
