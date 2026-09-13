@@ -60,6 +60,10 @@ export function ProfileForm({ name, email, image, role }: Props) {
           }
           setMessage(result?.message ?? "Saved.");
           setImageData("");
+          if (result && "requireReauth" in result && result.requireReauth) {
+            router.push("/login?reset=1");
+            return;
+          }
           router.refresh();
         });
       }}

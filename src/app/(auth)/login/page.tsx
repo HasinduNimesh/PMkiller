@@ -22,12 +22,12 @@ function LoginForm() {
           setError(null);
           setInfo(null);
           const result = await loginAction(formData);
-          if (result?.needsVerification && result.email) {
+          if (result && "needsVerification" in result && result.needsVerification && result.email) {
             setNeedsVerification(result.email);
             setError(result.error ?? null);
             return;
           }
-          if (result?.error) setError(result.error);
+          if (result && "error" in result) setError(result.error);
         });
       }}
     >

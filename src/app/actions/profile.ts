@@ -35,7 +35,12 @@ export async function updateProfileAction(formData: FormData) {
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   if (!user) return { error: "User not found." };
 
-  const data: { name: string; passwordHash?: string; image?: string | null } = {
+  const data: {
+    name: string;
+    passwordHash?: string;
+    passwordChangedAt?: Date;
+    image?: string | null;
+  } = {
     name: parsed.data.name.trim(),
   };
 
@@ -47,6 +52,7 @@ export async function updateProfileAction(formData: FormData) {
     const ok = await compare(parsed.data.currentPassword, user.passwordHash);
     if (!ok) return { error: "Current password is incorrect." };
     data.passwordHash = await hash(newPassword, 10);
+    data.passwordChangedAt = new Date();
   }
 
   const imageRaw = formData.get("imageData");
@@ -71,5 +77,11 @@ export async function updateProfileAction(formData: FormData) {
   revalidatePath("/settings/profile");
   revalidatePath("/admin/users");
   revalidatePath("/dashboard");
-  return { ok: true as const, message: "Profile updated." };
+  return {
+    ok: true as const,
+    message: data.passwordChangedAt
+      ? "Profile updated. Sign in again with your new password."
+      : "Profile updated.",
+    requireReauth: Boolean(data.passwordChangedAt),
+  };
 }

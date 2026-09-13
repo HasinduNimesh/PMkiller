@@ -16,8 +16,8 @@ export default function ForgotPasswordPage() {
         startTransition(async () => {
           setError(null);
           const result = await forgotPasswordAction(formData);
-          if (result?.error) setError(result.error);
-          else if (result?.message) setMessage(result.message);
+          if (result && "error" in result) setError(result.error);
+          else if (result && "message" in result) setMessage(result.message);
         });
       }}
     >

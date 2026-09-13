@@ -22,6 +22,13 @@ function safeEqual(a: string, b: string) {
   return timingSafeEqual(aa, bb);
 }
 
+function isProductionRuntime() {
+  return (
+    process.env.VERCEL_ENV === "production" ||
+    process.env.NODE_ENV === "production"
+  );
+}
+
 async function actorFromUserId(userId: string): Promise<ApiActor | NextResponse> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -67,7 +74,7 @@ async function actorFromEmail(email: string): Promise<ApiActor | NextResponse> {
   const membership = user?.memberships[0];
   if (!user || !membership) {
     return NextResponse.json(
-      { error: `No organization membership found for ${email}` },
+      { error: "No organization membership found for this actor." },
       { status: 403 },
     );
   }
@@ -85,7 +92,8 @@ async function actorFromEmail(email: string): Promise<ApiActor | NextResponse> {
 /**
  * Auth for /api/v1:
  * 1. Personal token `pmk_…` (preferred) — identity + role from the token owner.
- * 2. Legacy shared `MCP_API_KEY` + optional `X-Act-As-Email` / `MCP_ACT_AS_EMAIL`.
+ * 2. Legacy shared `MCP_API_KEY` — only when explicitly allowed; actor is fixed
+ *    via server env `MCP_ACT_AS_EMAIL` (request header Act-As is ignored).
  */
 export async function requireApiActor(req: Request | NextRequest): Promise<ApiActor | NextResponse> {
   const header = req.headers.get("authorization") ?? "";
@@ -103,7 +111,6 @@ export async function requireApiActor(req: Request | NextRequest): Promise<ApiAc
     if (row.expiresAt && row.expiresAt.getTime() < Date.now()) {
       return NextResponse.json({ error: "Token expired" }, { status: 401 });
     }
-    // Fire-and-forget last-used stamp
     void prisma.apiToken
       .update({ where: { id: row.id }, data: { lastUsedAt: new Date() } })
       .catch(() => undefined);
@@ -115,18 +122,34 @@ export async function requireApiActor(req: Request | NextRequest): Promise<ApiAc
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const actAs =
-    req.headers.get("x-act-as-email")?.trim().toLowerCase() ||
-    process.env.MCP_ACT_AS_EMAIL?.trim().toLowerCase();
+  // Shared key is dangerous: disabled in production unless explicitly opted in.
+  const allowShared =
+    process.env.MCP_ALLOW_SHARED_KEY === "true" || !isProductionRuntime();
+  if (!allowShared) {
+    return NextResponse.json(
+      {
+        error:
+          "Shared MCP_API_KEY is disabled in production. Create a personal pmk_ token on /integrations.",
+      },
+      { status: 401 },
+    );
+  }
 
+  // Never trust client-supplied Act-As — only the server env pin.
+  const actAs = process.env.MCP_ACT_AS_EMAIL?.trim().toLowerCase();
   if (!actAs) {
     return NextResponse.json(
       {
         error:
-          "Missing actor. Use a personal token from Integrations, or set MCP_ACT_AS_EMAIL / X-Act-As-Email.",
+          "Shared MCP key requires MCP_ACT_AS_EMAIL on the server (fixed actor). Prefer a personal pmk_ token.",
       },
       { status: 400 },
     );
+  }
+
+  // Ignore spoofable X-Act-As-Email header entirely.
+  if (req.headers.get("x-act-as-email")) {
+    console.warn("[api] Ignoring X-Act-As-Email header; using MCP_ACT_AS_EMAIL only");
   }
 
   return actorFromEmail(actAs);

@@ -7,6 +7,7 @@ import {
   fetchGithubUser,
   isGithubOAuthConfigured,
 } from "@/lib/github-api";
+import { encryptSecret } from "@/lib/secret-crypto";
 import { hasMinRole } from "@/lib/rbac";
 
 export async function GET(req: Request) {
@@ -49,12 +50,13 @@ export async function GET(req: Request) {
   try {
     const token = await exchangeGithubCode(code);
     const ghUser = await fetchGithubUser(token.access_token!);
+    const accessToken = encryptSecret(token.access_token!);
 
     await prisma.githubConnection.upsert({
       where: { organizationId: session.user.organizationId },
       create: {
         organizationId: session.user.organizationId,
-        accessToken: token.access_token!,
+        accessToken,
         tokenType: token.token_type ?? "bearer",
         scope: token.scope,
         githubUserId: String(ghUser.id),
@@ -62,7 +64,7 @@ export async function GET(req: Request) {
         connectedById: session.user.id,
       },
       update: {
-        accessToken: token.access_token!,
+        accessToken,
         tokenType: token.token_type ?? "bearer",
         scope: token.scope,
         githubUserId: String(ghUser.id),

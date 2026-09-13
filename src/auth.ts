@@ -21,6 +21,7 @@ declare module "next-auth" {
     organizationId: string;
     organizationName: string;
     role: OrgRole;
+    passwordChangedAt?: string | null;
   }
 }
 
@@ -32,11 +33,12 @@ declare module "next-auth/jwt" {
     organizationId?: string;
     organizationName?: string;
     role?: OrgRole;
+    passwordChangedAt?: string | null;
   }
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  // Required on Vercel — MissingSecret → 500 on /api/auth/session
+  // Required on Vercel — MissingSecret → 500 on /api/auth/*
   secret: process.env.AUTH_SECRET,
   trustHost: true,
   session: { strategy: "jwt" },
@@ -70,7 +72,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (!user) return null;
           const valid = await compare(password, user.passwordHash);
           if (!valid) return null;
-          // Unverified accounts are blocked in loginAction; belt-and-suspenders here.
           if (!user.emailVerified) return null;
 
           const membership = user.memberships[0];
@@ -84,6 +85,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             organizationId: membership.organizationId,
             organizationName: membership.organization.name,
             role: membership.role,
+            passwordChangedAt: user.passwordChangedAt?.toISOString() ?? null,
           };
         } catch (err) {
           console.error("[auth] authorize failed (check DATABASE_URL / schema):", err);
@@ -101,6 +103,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.organizationId = user.organizationId;
         token.organizationName = user.organizationName;
         token.role = user.role;
+        token.passwordChangedAt = user.passwordChangedAt ?? null;
       }
 
       // Always re-load membership + display name so updates apply without re-login.
@@ -112,6 +115,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             select: {
               name: true,
               email: true,
+              passwordChangedAt: true,
               memberships: {
                 include: { organization: true },
                 orderBy: { createdAt: "asc" },
@@ -121,19 +125,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
           const membership = dbUser?.memberships[0];
           if (dbUser && membership) {
+            const dbChanged = dbUser.passwordChangedAt?.toISOString() ?? null;
+            const tokenChanged = token.passwordChangedAt ?? null;
+            // Password was changed after this JWT was issued — force re-login
+            if (dbChanged !== tokenChanged) {
+              delete token.id;
+              delete token.organizationId;
+              delete token.organizationName;
+              delete token.role;
+              delete token.passwordChangedAt;
+              return token;
+            }
+
             token.name = dbUser.name;
             token.email = dbUser.email;
             token.organizationId = membership.organizationId;
             token.organizationName = membership.organization.name;
             token.role = membership.role;
           } else {
-            // Removed from every org — drop privileged claims
             delete token.organizationId;
             delete token.organizationName;
             delete token.role;
           }
         } catch (err) {
-          // Don't 500 /api/auth/session if Neon is briefly unreachable
           console.error("[auth] jwt membership reload failed:", err);
         }
       }
@@ -142,7 +156,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (!token.id || !token.organizationId || !token.role) {
-        // Membership gone — expire session so auth()/middleware treat user as logged out
         session.expires = new Date(0).toISOString() as typeof session.expires;
         return session;
       }

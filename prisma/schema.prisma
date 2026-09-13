@@ -72,6 +72,8 @@ model User {
   passwordHash  String
   /// null until the user confirms via Resend verification link (invites/seeds set immediately)
   emailVerified DateTime?
+  /// Bumped on password change/reset; JWT must match or session is rejected
+  passwordChangedAt DateTime?
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

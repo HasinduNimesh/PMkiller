@@ -9,6 +9,18 @@ export function isEmailConfigured() {
   return Boolean(resendApiKey);
 }
 
+export function isProductionRuntime() {
+  return (
+    process.env.VERCEL_ENV === "production" ||
+    process.env.NODE_ENV === "production"
+  );
+}
+
+/** Local DX may skip Resend; production must never auto-verify without mail. */
+export function allowDevAutoVerify() {
+  return !isEmailConfigured() && !isProductionRuntime();
+}
+
 export function appBaseUrl() {
   return (
     process.env.AUTH_URL?.replace(/\/$/, "") ||
@@ -34,13 +46,27 @@ export type SendEmailInput = {
   text?: string;
 };
 
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 /**
  * Sends via Resend when RESEND_API_KEY is set.
- * Without a key (local/dev), logs the payload and still returns ok so flows work.
+ * Without a key outside production, logs the payload for local DX.
+ * In production without a key, fails closed.
  */
 export async function sendEmail(input: SendEmailInput): Promise<{ ok: true } | { ok: false; error: string }> {
   const resend = getResend();
   if (!resend) {
+    if (isProductionRuntime()) {
+      console.error("[email] RESEND_API_KEY missing in production — refusing to send");
+      return { ok: false, error: "Email delivery is not configured." };
+    }
     console.info("[email:dev]", {
       to: input.to,
       subject: input.subject,
@@ -77,12 +103,12 @@ function shell(title: string, bodyHtml: string, footerNote?: string) {
     <tr><td align="center">
       <table role="presentation" width="100%" style="max-width:520px;background:#fff;border-radius:16px;padding:28px 28px 24px;border:1px solid #e5e7eb;">
         <tr><td>
-          <div style="font-size:20px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px;color:#2563eb;">${productName}</div>
-          <h1 style="font-size:18px;margin:16px 0 12px;color:#111827;">${title}</h1>
+          <div style="font-size:20px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px;color:#2563eb;">${escapeHtml(productName)}</div>
+          <h1 style="font-size:18px;margin:16px 0 12px;color:#111827;">${escapeHtml(title)}</h1>
           <div style="font-size:14px;line-height:1.55;color:#374151;">${bodyHtml}</div>
           ${
             footerNote
-              ? `<p style="margin:24px 0 0;font-size:12px;color:#9ca3af;">${footerNote}</p>`
+              ? `<p style="margin:24px 0 0;font-size:12px;color:#9ca3af;">${escapeHtml(footerNote)}</p>`
               : ""
           }
         </td></tr>
@@ -94,16 +120,17 @@ function shell(title: string, bodyHtml: string, footerNote?: string) {
 }
 
 function cta(href: string, label: string) {
-  return `<p style="margin:20px 0;"><a href="${href}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600;font-size:14px;">${label}</a></p>
-<p style="font-size:12px;color:#6b7280;word-break:break-all;">Or open: ${href}</p>`;
+  const safeHref = escapeHtml(href);
+  return `<p style="margin:20px 0;"><a href="${safeHref}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600;font-size:14px;">${escapeHtml(label)}</a></p>
+<p style="font-size:12px;color:#6b7280;word-break:break-all;">Or open: ${safeHref}</p>`;
 }
 
 export async function sendVerificationEmail(to: string, name: string | null, verifyUrl: string) {
-  const greeting = name ? `Hi ${name},` : "Hi,";
+  const greeting = name ? `Hi ${escapeHtml(name)},` : "Hi,";
   return sendEmail({
     to,
     subject: `Verify your ${productName} email`,
-    text: `${greeting}\n\nConfirm your email by opening:\n${verifyUrl}\n\nThis link expires in 24 hours.`,
+    text: `${name ? `Hi ${name},` : "Hi,"}\n\nConfirm your email by opening:\n${verifyUrl}\n\nThis link expires in 24 hours.`,
     html: shell(
       "Verify your email",
       `<p>${greeting}</p><p>Thanks for signing up. Confirm your email to activate your account.</p>${cta(verifyUrl, "Verify email")}`,
@@ -113,11 +140,11 @@ export async function sendVerificationEmail(to: string, name: string | null, ver
 }
 
 export async function sendPasswordResetEmail(to: string, name: string | null, resetUrl: string) {
-  const greeting = name ? `Hi ${name},` : "Hi,";
+  const greeting = name ? `Hi ${escapeHtml(name)},` : "Hi,";
   return sendEmail({
     to,
     subject: `Reset your ${productName} password`,
-    text: `${greeting}\n\nReset your password:\n${resetUrl}\n\nThis link expires in 1 hour.`,
+    text: `${name ? `Hi ${name},` : "Hi,"}\n\nReset your password:\n${resetUrl}\n\nThis link expires in 1 hour.`,
     html: shell(
       "Reset your password",
       `<p>${greeting}</p><p>We received a request to reset your password.</p>${cta(resetUrl, "Choose new password")}`,
@@ -134,15 +161,15 @@ export async function sendInviteEmail(input: {
   invitedBy: string;
   setupUrl: string;
 }) {
-  const greeting = input.name ? `Hi ${input.name},` : "Hi,";
+  const greeting = input.name ? `Hi ${escapeHtml(input.name)},` : "Hi,";
   return sendEmail({
     to: input.to,
     subject: `You're invited to ${input.orgName} on ${productName}`,
-    text: `${greeting}\n\n${input.invitedBy} invited you to ${input.orgName} as ${input.role}.\nSet your password:\n${input.setupUrl}`,
+    text: `${input.name ? `Hi ${input.name},` : "Hi,"}\n\n${input.invitedBy} invited you to ${input.orgName} as ${input.role}.\nSet your password:\n${input.setupUrl}`,
     html: shell(
       "You're invited",
       `<p>${greeting}</p>
-       <p><strong>${input.invitedBy}</strong> invited you to <strong>${input.orgName}</strong> as <strong>${input.role}</strong>.</p>
+       <p><strong>${escapeHtml(input.invitedBy)}</strong> invited you to <strong>${escapeHtml(input.orgName)}</strong> as <strong>${escapeHtml(input.role)}</strong>.</p>
        <p>Set your password to get started.</p>
        ${cta(input.setupUrl, "Set password & sign in")}`,
     ),
@@ -158,17 +185,17 @@ export async function sendAssignmentEmail(input: {
   projectName: string;
   issueUrl: string;
 }) {
-  const greeting = input.assigneeName ? `Hi ${input.assigneeName},` : "Hi,";
+  const greeting = input.assigneeName ? `Hi ${escapeHtml(input.assigneeName)},` : "Hi,";
   return sendEmail({
     to: input.to,
     subject: `Assigned: ${input.issueKey} — ${input.title}`,
-    text: `${greeting}\n\n${input.assignerName} assigned you ${input.issueKey} (${input.title}) on ${input.projectName}.\n${input.issueUrl}`,
+    text: `${input.assigneeName ? `Hi ${input.assigneeName},` : "Hi,"}\n\n${input.assignerName} assigned you ${input.issueKey} (${input.title}) on ${input.projectName}.\n${input.issueUrl}`,
     html: shell(
       "Work assigned to you",
       `<p>${greeting}</p>
-       <p><strong>${input.assignerName}</strong> assigned you an issue on <strong>${input.projectName}</strong>.</p>
+       <p><strong>${escapeHtml(input.assignerName)}</strong> assigned you an issue on <strong>${escapeHtml(input.projectName)}</strong>.</p>
        <p style="margin:12px 0;padding:12px 14px;background:#f3f4f6;border-radius:10px;">
-         <strong>${input.issueKey}</strong><br/>${input.title}
+         <strong>${escapeHtml(input.issueKey)}</strong><br/>${escapeHtml(input.title)}
        </p>
        ${cta(input.issueUrl, "Open issue")}`,
     ),

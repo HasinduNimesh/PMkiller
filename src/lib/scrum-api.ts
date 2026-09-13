@@ -2,6 +2,7 @@ import type { IssueType, OrgRole, SprintStatus, TaskSeverity, TaskStatus } from 
 import { prisma } from "@/lib/db";
 import type { ApiActor } from "@/lib/api-actor";
 import { hasMinRole } from "@/lib/rbac";
+import { resolveAssigneeId } from "@/lib/assignee";
 
 async function nextIssueKey(projectId: string) {
   const project = await prisma.project.update({
@@ -51,11 +52,15 @@ export async function listIssues(
 
   let assigneeId: string | undefined;
   if (filters?.assigneeEmail) {
-    const u = await prisma.user.findUnique({
-      where: { email: filters.assigneeEmail.toLowerCase() },
+    const resolved = await resolveAssigneeId({
+      email: filters.assigneeEmail,
+      organizationId: actor.organizationId,
+      projectId: project.id,
     });
-    if (!u) return { error: "Assignee email not found." as const };
-    assigneeId = u.id;
+    if ("error" in resolved) {
+      return { project: { id: project.id, key: project.key, name: project.name }, issues: [] };
+    }
+    assigneeId = resolved.assigneeId;
   }
 
   const issues = await prisma.task.findMany({
@@ -119,25 +124,13 @@ export async function createIssue(
 
   let assigneeId: string | null = null;
   if (input.assigneeEmail) {
-    const u = await prisma.user.findUnique({
-      where: { email: input.assigneeEmail.toLowerCase() },
+    const resolved = await resolveAssigneeId({
+      email: input.assigneeEmail,
+      organizationId: actor.organizationId,
+      projectId: project.id,
     });
-    if (!u) return { error: "Assignee email not found." as const };
-    const onProject = await prisma.projectMember.count({ where: { projectId: project.id } });
-    if (onProject > 0) {
-      const pm = await prisma.projectMember.findUnique({
-        where: { projectId_userId: { projectId: project.id, userId: u.id } },
-      });
-      if (!pm) return { error: "Assignee must be a project member." as const };
-    } else {
-      const om = await prisma.orgMember.findUnique({
-        where: {
-          organizationId_userId: { organizationId: actor.organizationId, userId: u.id },
-        },
-      });
-      if (!om) return { error: "Assignee is not in your organization." as const };
-    }
-    assigneeId = u.id;
+    if ("error" in resolved) return { error: resolved.error };
+    assigneeId = resolved.assigneeId;
   }
 
   if (input.sprintId) {
@@ -231,11 +224,13 @@ export async function updateIssue(
   if (input.assigneeEmail === null) {
     assigneeId = null;
   } else if (input.assigneeEmail) {
-    const u = await prisma.user.findUnique({
-      where: { email: input.assigneeEmail.toLowerCase() },
+    const resolved = await resolveAssigneeId({
+      email: input.assigneeEmail,
+      organizationId: actor.organizationId,
+      projectId: existing.projectId,
     });
-    if (!u) return { error: "Assignee email not found." as const };
-    assigneeId = u.id;
+    if ("error" in resolved) return { error: resolved.error };
+    assigneeId = resolved.assigneeId;
   }
 
   if (input.sprintId !== undefined && input.sprintId !== null) {

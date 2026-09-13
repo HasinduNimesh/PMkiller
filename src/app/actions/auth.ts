@@ -1,17 +1,20 @@
 "use server";
 
-import { hash } from "bcryptjs";
+import { hash, compare } from "bcryptjs";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { signIn, signOut } from "@/auth";
 import { prisma } from "@/lib/db";
 import {
+  allowDevAutoVerify,
   appUrl,
   isEmailConfigured,
+  isProductionRuntime,
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "@/lib/email";
 import { consumeEmailToken, createEmailToken } from "@/lib/email-tokens";
+import { clientRateKey, rateLimit } from "@/lib/rate-limit";
 import {
   forgotPasswordSchema,
   loginSchema,
@@ -29,7 +32,19 @@ function slugify(name: string) {
   );
 }
 
+async function guardAuthRate(action: string, limit: number, windowMs: number) {
+  const key = await clientRateKey(action);
+  const result = rateLimit(key, limit, windowMs);
+  if (!result.ok) {
+    return { error: `Too many attempts. Try again in ${result.retryAfterSec}s.` };
+  }
+  return null;
+}
+
 export async function loginAction(formData: FormData) {
+  const limited = await guardAuthRate("login", 20, 15 * 60 * 1000);
+  if (limited) return limited;
+
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -41,10 +56,18 @@ export async function loginAction(formData: FormData) {
   const email = parsed.data.email.toLowerCase();
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { emailVerified: true },
+    select: { passwordHash: true, emailVerified: true },
   });
 
-  if (user && !user.emailVerified) {
+  // Constant-ish path: require password match before revealing verification state
+  if (!user) {
+    return { error: "Invalid email or password." };
+  }
+  const valid = await compare(parsed.data.password, user.passwordHash);
+  if (!valid) {
+    return { error: "Invalid email or password." };
+  }
+  if (!user.emailVerified) {
     return {
       error: "Please verify your email before signing in. Check your inbox for the link.",
       needsVerification: true as const,
@@ -67,6 +90,9 @@ export async function loginAction(formData: FormData) {
 }
 
 export async function registerAction(formData: FormData) {
+  const limited = await guardAuthRate("register", 8, 60 * 60 * 1000);
+  if (limited) return limited;
+
   const parsed = registerSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -78,17 +104,27 @@ export async function registerAction(formData: FormData) {
     return { error: "Please fill all fields correctly (password min 6 chars)." };
   }
 
+  if (isProductionRuntime() && !isEmailConfigured()) {
+    return {
+      error: "Registration is unavailable until email delivery (RESEND_API_KEY) is configured.",
+    };
+  }
+
   const email = parsed.data.email.toLowerCase();
   const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return { error: "An account with this email already exists." };
+  if (existing) {
+    // Avoid confirming whether the email is already registered
+    return {
+      error: "Unable to create this account. Try signing in or use a different email.",
+    };
+  }
 
   const passwordHash = await hash(parsed.data.password, 10);
   let slug = slugify(parsed.data.organizationName);
   const slugTaken = await prisma.organization.findUnique({ where: { slug } });
   if (slugTaken) slug = `${slug}-${Date.now().toString(36)}`;
 
-  // Without Resend configured (local), auto-verify so signup still works.
-  const autoVerify = !isEmailConfigured();
+  const autoVerify = allowDevAutoVerify();
 
   await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
@@ -121,7 +157,10 @@ export async function registerAction(formData: FormData) {
     const verifyUrl = appUrl(
       `/verify-email?email=${encodeURIComponent(email)}&token=${encodeURIComponent(rawToken)}`,
     );
-    await sendVerificationEmail(email, parsed.data.name, verifyUrl);
+    const sent = await sendVerificationEmail(email, parsed.data.name, verifyUrl);
+    if (!sent.ok) {
+      return { error: "Account created but verification email failed. Contact support." };
+    }
     redirect(`/check-email?email=${encodeURIComponent(email)}`);
   }
 
@@ -140,6 +179,9 @@ export async function registerAction(formData: FormData) {
 }
 
 export async function resendVerificationAction(formData: FormData) {
+  const limited = await guardAuthRate("resend-verify", 5, 15 * 60 * 1000);
+  if (limited) return limited;
+
   const emailRaw = String(formData.get("email") || "").toLowerCase().trim();
   if (!emailRaw.includes("@")) {
     return { error: "Enter a valid email." };
@@ -173,7 +215,7 @@ export async function verifyEmailAction(email: string, token: string) {
   if (!consumed.ok) return consumed;
 
   const user = await prisma.user.findUnique({ where: { email: normalized } });
-  if (!user) return { ok: false as const, error: "Account not found." };
+  if (!user) return { ok: false as const, error: "Invalid or expired link." };
 
   if (!user.emailVerified) {
     await prisma.user.update({
@@ -186,6 +228,9 @@ export async function verifyEmailAction(email: string, token: string) {
 }
 
 export async function forgotPasswordAction(formData: FormData) {
+  const limited = await guardAuthRate("forgot-password", 5, 15 * 60 * 1000);
+  if (limited) return limited;
+
   const parsed = forgotPasswordSchema.safeParse({
     email: formData.get("email"),
   });
@@ -200,7 +245,7 @@ export async function forgotPasswordAction(formData: FormData) {
   });
 
   // Always same response (no enumeration)
-  if (user) {
+  if (user && isEmailConfigured()) {
     const { rawToken } = await createEmailToken("password-reset", email);
     const resetUrl = appUrl(
       `/reset-password?email=${encodeURIComponent(email)}&token=${encodeURIComponent(rawToken)}`,
@@ -215,6 +260,9 @@ export async function forgotPasswordAction(formData: FormData) {
 }
 
 export async function resetPasswordAction(formData: FormData) {
+  const limited = await guardAuthRate("reset-password", 8, 15 * 60 * 1000);
+  if (limited) return limited;
+
   const parsed = resetPasswordSchema.safeParse({
     email: formData.get("email"),
     token: formData.get("token"),
@@ -229,13 +277,15 @@ export async function resetPasswordAction(formData: FormData) {
   if (!consumed.ok) return { error: consumed.error };
 
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return { error: "Account not found." };
+  if (!user) return { error: "Invalid or expired link." };
 
   const passwordHash = await hash(parsed.data.password, 10);
+  const passwordChangedAt = new Date();
   await prisma.user.update({
     where: { id: user.id },
     data: {
       passwordHash,
+      passwordChangedAt,
       // Completing reset proves mailbox access
       emailVerified: user.emailVerified ?? new Date(),
     },

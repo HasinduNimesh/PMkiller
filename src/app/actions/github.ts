@@ -11,9 +11,30 @@ import {
   listGithubRepos,
   newWebhookSecret,
 } from "@/lib/github-api";
+import { decryptSecret, encryptSecret, isEncryptedSecret } from "@/lib/secret-crypto";
 
 function webhookPublicUrl() {
   return `${(process.env.AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "")}/api/github/webhook`;
+}
+
+async function githubAccessTokenForOrg(organizationId: string) {
+  const connection = await prisma.githubConnection.findUnique({
+    where: { organizationId },
+  });
+  if (!connection) return null;
+
+  const plaintext = decryptSecret(connection.accessToken);
+  // Lazily upgrade legacy plaintext rows
+  if (!isEncryptedSecret(connection.accessToken)) {
+    void prisma.githubConnection
+      .update({
+        where: { id: connection.id },
+        data: { accessToken: encryptSecret(plaintext) },
+      })
+      .catch(() => undefined);
+  }
+
+  return { connection, token: plaintext };
 }
 
 export async function updateGithubSettingsAction(projectId: string, formData: FormData) {
@@ -83,12 +104,11 @@ export async function linkGithubRepoAction(projectId: string, fullName: string) 
   });
   if (!project) return { error: "Project not found." };
 
-  const connection = await prisma.githubConnection.findUnique({
-    where: { organizationId: session.user.organizationId },
-  });
-  if (!connection) {
+  const gh = await githubAccessTokenForOrg(session.user.organizationId);
+  if (!gh) {
     return { error: "Connect GitHub first, then pick a repository." };
   }
+  const { token } = gh;
 
   const repo = normalizeGithubRepo(fullName);
   if (!repo) return { error: "Invalid repository name." };
@@ -102,7 +122,7 @@ export async function linkGithubRepoAction(projectId: string, fullName: string) 
     const [prevOwner, prevName] = project.githubRepo.split("/");
     try {
       await deleteRepoWebhook({
-        token: connection.accessToken,
+        token,
         owner: prevOwner,
         repo: prevName,
         hookId: project.githubWebhookId,
@@ -115,7 +135,7 @@ export async function linkGithubRepoAction(projectId: string, fullName: string) 
   let hookId: number;
   try {
     hookId = await createRepoWebhook({
-      token: connection.accessToken,
+      token,
       owner,
       repo: name,
       webhookUrl: hookUrl,
@@ -152,15 +172,13 @@ export async function disconnectGithubRepoAction(projectId: string) {
   });
   if (!project) return { error: "Project not found." };
 
-  const connection = await prisma.githubConnection.findUnique({
-    where: { organizationId: session.user.organizationId },
-  });
+  const gh = await githubAccessTokenForOrg(session.user.organizationId);
 
-  if (connection && project.githubRepo && project.githubWebhookId) {
+  if (gh && project.githubRepo && project.githubWebhookId) {
     const [owner, name] = project.githubRepo.split("/");
     try {
       await deleteRepoWebhook({
-        token: connection.accessToken,
+        token: gh.token,
         owner,
         repo: name,
         hookId: project.githubWebhookId,
@@ -195,16 +213,14 @@ export async function disconnectGithubAccountAction() {
 
 export async function getGithubReposForOrg() {
   const session = await requireRole("PM");
-  const connection = await prisma.githubConnection.findUnique({
-    where: { organizationId: session.user.organizationId },
-  });
-  if (!connection) return { error: "Not connected", repos: [] as const };
+  const gh = await githubAccessTokenForOrg(session.user.organizationId);
+  if (!gh) return { error: "Not connected", repos: [] as const };
 
   try {
-    const repos = await listGithubRepos(connection.accessToken);
+    const repos = await listGithubRepos(gh.token);
     return {
       ok: true as const,
-      login: connection.githubLogin,
+      login: gh.connection.githubLogin,
       repos: repos.map((r) => ({
         id: r.id,
         fullName: r.full_name,

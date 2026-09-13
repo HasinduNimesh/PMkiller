@@ -173,8 +173,17 @@ Each teammate creates their own token while logged in; agents run with **their**
 
 | Variable | Purpose |
 |----------|---------|
-| `MCP_API_KEY` | Shared bearer secret on Vercel |
-| `MCP_ACT_AS_EMAIL` | Fixed impersonation email (avoid for multi-user) |
+| `MCP_API_KEY` | Shared bearer secret (disabled in production unless `MCP_ALLOW_SHARED_KEY=true`) |
+| `MCP_ACT_AS_EMAIL` | Fixed actor email for that shared key (required). Request `X-Act-As-Email` is ignored. |
+| `MCP_ALLOW_SHARED_KEY` | Set `true` to allow the shared key in production (not recommended) |
+
+Prefer personal `pmk_` tokens. Do not rely on shared-key Act-As for multi-tenant orgs.
+
+### Security notes
+
+- GitHub OAuth tokens are AES-256-GCM encrypted at rest using `AUTH_SECRET`
+- Password reset/change bumps `passwordChangedAt` and invalidates existing JWT sessions
+- Auth actions are rate-limited per IP; registration requires Resend in production
 
 ### Cursor MCP config
 
