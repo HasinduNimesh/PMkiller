@@ -31,7 +31,7 @@ function ResetPasswordForm() {
       action={(formData) => {
         startTransition(async () => {
           const result = await resetPasswordAction(formData);
-          if (result?.error) setError(result.error);
+          if (result && "error" in result) setError(result.error);
           else router.push("/login?reset=1");
         });
       }}
