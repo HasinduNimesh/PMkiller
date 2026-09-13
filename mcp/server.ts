@@ -280,6 +280,28 @@ server.registerTool(
 );
 
 server.registerTool(
+  "reset_project_planning",
+  {
+    description:
+      "Remove all issues and sprints from a project (PM+). Keeps the project; resets issue numbering.",
+    inputSchema: z.object({
+      project: z.string().describe("Project id or key (e.g. M)"),
+    }),
+  },
+  async (args) => {
+    try {
+      return ok(
+        await api(`/api/v1/projects/${encodeURIComponent(args.project)}/reset-planning`, {
+          method: "POST",
+        }),
+      );
+    } catch (e) {
+      return fail(e);
+    }
+  },
+);
+
+server.registerTool(
   "my_work",
   {
     description: "List open issues assigned to the MCP actor (planning / daily standup).",

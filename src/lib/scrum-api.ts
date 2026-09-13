@@ -376,6 +376,31 @@ export async function setSprintStatus(
   return { sprint: updated };
 }
 
+/** Delete all issues and sprints; reset issue counter. Keeps the project record. */
+export async function resetProjectPlanning(actor: ApiActor, projectIdOrKey: string) {
+  if (!hasMinRole(actor.role, "PM")) {
+    return { error: "Requires PM or higher." as const };
+  }
+
+  const project = await getProjectForActor(actor, projectIdOrKey);
+  if (!project) return { error: "Project not found." as const };
+
+  const [taskCount, sprintCount] = await prisma.$transaction(async (tx) => {
+    const deletedTasks = await tx.task.deleteMany({ where: { projectId: project.id } });
+    const deletedSprints = await tx.sprint.deleteMany({ where: { projectId: project.id } });
+    await tx.project.update({
+      where: { id: project.id },
+      data: { issueCounter: 0 },
+    });
+    return [deletedTasks.count, deletedSprints.count] as const;
+  });
+
+  return {
+    project: { id: project.id, key: project.key, name: project.name },
+    deleted: { tasks: taskCount, sprints: sprintCount },
+  };
+}
+
 export async function myWork(actor: ApiActor) {
   const assigned = await prisma.task.findMany({
     where: {

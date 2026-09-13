@@ -1,8 +1,9 @@
 import { Resend } from "resend";
 
 const resendApiKey = process.env.RESEND_API_KEY?.trim() ?? "";
+const productName = "pmkiller";
 const fromAddress =
-  process.env.EMAIL_FROM?.trim() || "ProjManager <onboarding@resend.dev>";
+  process.env.EMAIL_FROM?.trim() || `${productName} <onboarding@resend.dev>`;
 
 export function isEmailConfigured() {
   return Boolean(resendApiKey);
@@ -76,7 +77,7 @@ function shell(title: string, bodyHtml: string, footerNote?: string) {
     <tr><td align="center">
       <table role="presentation" width="100%" style="max-width:520px;background:#fff;border-radius:16px;padding:28px 28px 24px;border:1px solid #e5e7eb;">
         <tr><td>
-          <div style="font-size:20px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px;">Proj<span style="color:#2563eb;">Manager</span></div>
+          <div style="font-size:20px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px;color:#2563eb;">${productName}</div>
           <h1 style="font-size:18px;margin:16px 0 12px;color:#111827;">${title}</h1>
           <div style="font-size:14px;line-height:1.55;color:#374151;">${bodyHtml}</div>
           ${
@@ -101,7 +102,7 @@ export async function sendVerificationEmail(to: string, name: string | null, ver
   const greeting = name ? `Hi ${name},` : "Hi,";
   return sendEmail({
     to,
-    subject: "Verify your ProjManager email",
+    subject: `Verify your ${productName} email`,
     text: `${greeting}\n\nConfirm your email by opening:\n${verifyUrl}\n\nThis link expires in 24 hours.`,
     html: shell(
       "Verify your email",
@@ -115,7 +116,7 @@ export async function sendPasswordResetEmail(to: string, name: string | null, re
   const greeting = name ? `Hi ${name},` : "Hi,";
   return sendEmail({
     to,
-    subject: "Reset your ProjManager password",
+    subject: `Reset your ${productName} password`,
     text: `${greeting}\n\nReset your password:\n${resetUrl}\n\nThis link expires in 1 hour.`,
     html: shell(
       "Reset your password",
@@ -136,7 +137,7 @@ export async function sendInviteEmail(input: {
   const greeting = input.name ? `Hi ${input.name},` : "Hi,";
   return sendEmail({
     to: input.to,
-    subject: `You're invited to ${input.orgName} on ProjManager`,
+    subject: `You're invited to ${input.orgName} on ${productName}`,
     text: `${greeting}\n\n${input.invitedBy} invited you to ${input.orgName} as ${input.role}.\nSet your password:\n${input.setupUrl}`,
     html: shell(
       "You're invited",
