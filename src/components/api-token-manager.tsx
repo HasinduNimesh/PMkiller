@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Check, Copy, KeyRound, Trash2 } from "lucide-react";
 import { createApiTokenAction, revokeApiTokenAction } from "@/app/actions/api-tokens";
+import { McpClientSetupGrid } from "@/components/mcp-client-setup-grid";
 
 export type TokenRow = {
   id: string;
@@ -49,26 +50,6 @@ export function ApiTokenManager({
   const [error, setError] = useState<string | null>(null);
   const [freshToken, setFreshToken] = useState<string | null>(null);
 
-  const cursorJson = freshToken
-    ? JSON.stringify(
-        {
-          mcpServers: {
-            projmanager: {
-              command: "pnpm",
-              args: ["exec", "tsx", "mcp/server.ts"],
-              cwd: "<path-to-Proj-Manager-repo>",
-              env: {
-                PROJMANAGER_URL: baseUrl,
-                MCP_API_KEY: freshToken,
-              },
-            },
-          },
-        },
-        null,
-        2,
-      )
-    : null;
-
   return (
     <div className="panel neon-ring">
       <div className="panel-body space-y-5">
@@ -84,18 +65,22 @@ export function ApiTokenManager({
         </div>
 
         {freshToken && (
-          <div className="callout callout-ok space-y-3" role="status">
-            <p className="font-medium">Copy this token now — it won’t be shown again.</p>
+          <div className="callout callout-ok space-y-4" role="status">
+            <div>
+              <p className="font-medium">Token ready — copy setup for any client below.</p>
+              <p className="mt-1 text-xs opacity-80">
+                Shown once. Configs already include this token — no manual paste needed.
+              </p>
+            </div>
             <pre className="overflow-x-auto rounded-xl bg-base-100/50 p-3 font-mono text-xs break-all">
               {freshToken}
             </pre>
-            <div className="flex flex-wrap gap-2">
-              <CopyOnce value={freshToken} label="Copy token" />
-              {cursorJson && <CopyOnce value={cursorJson} label="Copy Cursor JSON" />}
+            <CopyOnce value={freshToken} label="Copy raw token" />
+
+            <div className="border-t border-success/20 pt-4">
+              <p className="mb-3 text-sm font-semibold">One-click client setup</p>
+              <McpClientSetupGrid baseUrl={baseUrl} apiKey={freshToken} emphasize />
             </div>
-            <p className="text-xs opacity-80">
-              Paste as <code>MCP_API_KEY</code> in Cursor. Do not set <code>MCP_ACT_AS_EMAIL</code>.
-            </p>
           </div>
         )}
 
@@ -109,7 +94,6 @@ export function ApiTokenManager({
           className="flex flex-wrap items-end gap-3"
           onSubmit={(e) => {
             e.preventDefault();
-            // Capture before await — React nulls e.currentTarget after the event
             const form = e.currentTarget;
             const fd = new FormData(form);
             setError(null);
@@ -131,8 +115,8 @@ export function ApiTokenManager({
             <input
               name="name"
               className="input input-bordered input-sm rounded-xl"
-              placeholder="Cursor MCP"
-              defaultValue="Cursor MCP"
+              placeholder="My laptop MCP"
+              defaultValue="My MCP client"
               maxLength={80}
             />
           </label>
