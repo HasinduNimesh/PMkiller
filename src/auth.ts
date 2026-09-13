@@ -27,6 +27,8 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
+    name?: string | null;
+    email?: string | null;
     organizationId?: string;
     organizationName?: string;
     role?: OrgRole;
@@ -94,21 +96,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id!;
+        token.name = user.name;
+        token.email = user.email;
         token.organizationId = user.organizationId;
         token.organizationName = user.organizationName;
         token.role = user.role;
       }
 
-      // Always re-load membership so role demotion / org removal takes effect
-      // without waiting for re-login (JWT otherwise stays stale).
+      // Always re-load membership + display name so updates apply without re-login.
+      // Do not put avatar bytes in the JWT (data URLs blow the cookie size).
       if (token.id) {
         try {
-          const membership = await prisma.orgMember.findFirst({
-            where: { userId: token.id as string },
-            include: { organization: true },
-            orderBy: { createdAt: "asc" },
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: {
+              name: true,
+              email: true,
+              memberships: {
+                include: { organization: true },
+                orderBy: { createdAt: "asc" },
+                take: 1,
+              },
+            },
           });
-          if (membership) {
+          const membership = dbUser?.memberships[0];
+          if (dbUser && membership) {
+            token.name = dbUser.name;
+            token.email = dbUser.email;
             token.organizationId = membership.organizationId;
             token.organizationName = membership.organization.name;
             token.role = membership.role;
@@ -133,6 +147,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return session;
       }
       session.user.id = token.id as string;
+      session.user.name = (token.name as string | null | undefined) ?? session.user.name;
+      session.user.email = (token.email as string | null | undefined) ?? session.user.email;
       session.user.organizationId = token.organizationId as string;
       session.user.organizationName = (token.organizationName as string) ?? "";
       session.user.role = token.role as OrgRole;

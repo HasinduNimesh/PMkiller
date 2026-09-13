@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { RoleSelect } from "@/components/role-select";
 import { InviteUserForm } from "@/components/invite-user-form";
 import { RemoveMemberButton } from "@/components/remove-member-button";
+import { UserAvatar } from "@/components/user-avatar";
 
 export default async function AdminUsersPage() {
   const session = await auth();
@@ -13,7 +14,7 @@ export default async function AdminUsersPage() {
 
   const members = await prisma.orgMember.findMany({
     where: { organizationId: session.user.organizationId },
-    include: { user: { select: { id: true, name: true, email: true } } },
+    include: { user: { select: { id: true, name: true, email: true, image: true } } },
     orderBy: { createdAt: "asc" },
   });
 
@@ -45,13 +46,12 @@ export default async function AdminUsersPage() {
                 <tr key={m.id} className="hover">
                   <td>
                     <div className="flex items-center gap-3">
-                      <div className="avatar placeholder">
-                        <div className="w-8 rounded-full bg-neutral text-neutral-content">
-                          <span className="text-xs">
-                            {(m.user.name ?? "?").slice(0, 1).toUpperCase()}
-                          </span>
-                        </div>
-                      </div>
+                      <UserAvatar
+                        name={m.user.name}
+                        image={m.user.image}
+                        size={32}
+                        rounded="full"
+                      />
                       <span className="font-medium">{m.user.name ?? "—"}</span>
                     </div>
                   </td>

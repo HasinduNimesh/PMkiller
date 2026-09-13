@@ -2,13 +2,24 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { logoutAction } from "@/app/actions/auth";
 import { canManageUsers } from "@/lib/rbac";
+import { prisma } from "@/lib/db";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { GlobalSearch } from "@/components/global-search";
 import { SidebarNav } from "@/components/sidebar-nav";
+import { UserMenu } from "@/components/user-menu";
+import { UserAvatar } from "@/components/user-avatar";
 import { LogOut } from "lucide-react";
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const session = await auth();
+  const avatarImage = session?.user.id
+    ? (
+        await prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { image: true },
+        })
+      )?.image ?? null
+    : null;
 
   return (
     <div className="drawer lg:drawer-open min-h-screen">
@@ -49,21 +60,12 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <ThemeToggle />
             {session && (
-              <div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-base-100/60 py-1.5 pl-3 pr-1.5 backdrop-blur-md shadow-[0_0_20px_color-mix(in_oklab,var(--color-primary)_12%,transparent)]">
-                <div className="text-right">
-                  <div className="text-sm font-semibold leading-tight">{session.user.name}</div>
-                  <div className="text-[11px] uppercase tracking-wide text-base-content/45">
-                    {session.user.role}
-                  </div>
-                </div>
-                <div className="avatar placeholder">
-                  <div className="w-9 rounded-xl bg-primary text-primary-content shadow-[0_0_16px_color-mix(in_oklab,var(--color-primary)_45%,transparent)]">
-                    <span className="text-sm font-semibold">
-                      {(session.user.name ?? "U").slice(0, 1).toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <UserMenu
+                name={session.user.name}
+                email={session.user.email}
+                role={session.user.role}
+                image={avatarImage}
+              />
             )}
           </div>
         </div>
@@ -88,10 +90,23 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           {session && (
             <div className="mt-auto border-t border-base-300/60 p-3">
               <div className="mb-2 rounded-2xl bg-base-200/70 px-3 py-2.5 text-xs lg:hidden">
-                <div className="font-semibold">{session.user.name}</div>
-                <div className="mt-0.5 text-base-content/50">
-                  {session.user.organizationName} · {session.user.role}
+                <div className="flex items-center gap-2">
+                  <UserAvatar
+                    name={session.user.name}
+                    image={avatarImage}
+                    size={28}
+                    rounded="full"
+                  />
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold">{session.user.name}</div>
+                    <div className="mt-0.5 text-base-content/50">
+                      {session.user.organizationName} · {session.user.role}
+                    </div>
+                  </div>
                 </div>
+                <Link href="/settings/profile" className="link link-primary mt-2 inline-block text-xs">
+                  Edit profile
+                </Link>
               </div>
               <form action={logoutAction}>
                 <button type="submit" className="btn btn-ghost btn-block justify-start gap-2 rounded-xl">

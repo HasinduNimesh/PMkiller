@@ -8,6 +8,7 @@ import {
   Users,
   ListTodo,
   Puzzle,
+  Settings,
 } from "lucide-react";
 
 export function SidebarNav({ canManageUsers }: { canManageUsers: boolean }) {
@@ -18,6 +19,7 @@ export function SidebarNav({ canManageUsers }: { canManageUsers: boolean }) {
     { href: "/my-work", label: "My work", icon: ListTodo },
     { href: "/projects", label: "Projects", icon: FolderKanban },
     { href: "/integrations", label: "Integrations", icon: Puzzle },
+    { href: "/settings/profile", label: "Settings", icon: Settings },
     ...(canManageUsers
       ? [{ href: "/admin/users", label: "Users & roles", icon: Users }]
       : []),
