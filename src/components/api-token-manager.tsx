@@ -65,14 +65,17 @@ export function ApiTokenManager({
         </div>
 
         {freshToken && (
-          <div className="callout callout-ok space-y-4" role="status">
+          <div
+            className="space-y-4 rounded-2xl border border-success/35 bg-success/5 p-4 sm:p-5"
+            role="status"
+          >
             <div>
-              <p className="font-medium">Token ready — copy setup for any client below.</p>
-              <p className="mt-1 text-xs opacity-80">
-                Shown once. Configs already include this token — no manual paste needed.
+              <p className="font-medium text-success">Token ready — copy setup for any client</p>
+              <p className="mt-1 text-xs text-base-content/60">
+                Shown once. Configs already include this token.
               </p>
             </div>
-            <pre className="overflow-x-auto rounded-xl bg-base-100/50 p-3 font-mono text-xs break-all">
+            <pre className="overflow-x-auto rounded-xl border border-base-300/50 bg-base-100 p-3 font-mono text-xs break-all">
               {freshToken}
             </pre>
             <CopyOnce value={freshToken} label="Copy raw token" />

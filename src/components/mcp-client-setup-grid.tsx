@@ -25,47 +25,6 @@ function useCopy() {
   return { copiedKey, copy };
 }
 
-function CopyBtn({
-  id,
-  value,
-  label,
-  copiedKey,
-  onCopy,
-  primary,
-}: {
-  id: string;
-  value: string;
-  label: string;
-  copiedKey: string | null;
-  onCopy: (id: string, value: string) => void;
-  primary?: boolean;
-}) {
-  const done = copiedKey === id;
-  return (
-    <button
-      type="button"
-      className={`btn btn-sm gap-1.5 rounded-xl ${primary ? "btn-primary" : "btn-outline"}`}
-      onClick={() => onCopy(id, value)}
-    >
-      {done ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-      {done ? "Copied!" : label}
-    </button>
-  );
-}
-
-function Snippet({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="overflow-hidden rounded-xl border border-primary/15 bg-base-100/50">
-      <div className="border-b border-primary/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-base-content/50">
-        {label}
-      </div>
-      <pre className="max-h-48 overflow-auto p-3 font-mono text-[11px] leading-relaxed text-base-content/80">
-        <code>{value}</code>
-      </pre>
-    </div>
-  );
-}
-
 type ClientId = "cursor" | "claude-code" | "claude-desktop";
 
 const CLIENTS: {
@@ -80,25 +39,26 @@ const CLIENTS: {
     title: "Cursor",
     subtitle: "Settings → MCP",
     icon: Code2,
-    pathHint: "Paste into Cursor MCP config",
+    pathHint: "Paste into Cursor Settings → MCP. Set cwd to your Proj-Manager clone.",
   },
   {
     id: "claude-code",
     title: "Claude Code",
     subtitle: "CLI or .mcp.json",
     icon: Terminal,
-    pathHint: "Run CLI or merge into .mcp.json",
+    pathHint: "Run the CLI, or merge into .mcp.json / ~/.claude.json, then claude mcp list.",
   },
   {
     id: "claude-desktop",
     title: "Claude Desktop",
-    subtitle: "claude_desktop_config.json",
+    subtitle: "App config file",
     icon: Sparkles,
-    pathHint: "macOS ~/Library/Application Support/Claude/ · Windows %APPDATA%\\Claude\\",
+    pathHint:
+      "Merge into claude_desktop_config.json (macOS: ~/Library/Application Support/Claude/, Windows: %APPDATA%\\Claude\\), then fully quit and reopen.",
   },
 ];
 
-/** One-click setup cards for all clients — used after token creation and in the guide. */
+/** Equal-height client cards with one-click copy. Preview sits below the row. */
 export function McpClientSetupGrid({
   baseUrl,
   apiKey,
@@ -106,107 +66,139 @@ export function McpClientSetupGrid({
 }: {
   baseUrl: string;
   apiKey: string;
-  /** When true, treat as “ready to paste” (real token). */
   emphasize?: boolean;
 }) {
   const { copiedKey, copy } = useCopy();
-  const [open, setOpen] = useState<ClientId | null>(emphasize ? "cursor" : null);
+  const [selected, setSelected] = useState<ClientId>("cursor");
 
   const configs = {
     cursor: {
-      primary: { id: "cursor-json", label: "Copy Cursor JSON", value: mcpCursorJson(baseUrl, apiKey) },
-      secondary: { id: "cursor-env", label: "Copy env", value: mcpEnvBlock(baseUrl, apiKey) },
+      buttons: [
+        { id: "cursor-json", label: "Copy Cursor JSON", value: mcpCursorJson(baseUrl, apiKey), primary: true },
+        { id: "cursor-env", label: "Copy env", value: mcpEnvBlock(baseUrl, apiKey), primary: false },
+      ],
+      previewLabel: "Cursor mcp.json",
       preview: mcpCursorJson(baseUrl, apiKey),
-      previewLabel: "mcp.json",
     },
     "claude-code": {
-      primary: {
-        id: "claude-cli",
-        label: "Copy CLI command",
-        value: mcpClaudeCodeCli(baseUrl, apiKey),
-      },
-      secondary: {
-        id: "claude-code-json",
-        label: "Copy .mcp.json",
-        value: mcpClaudeCodeJson(baseUrl, apiKey),
-      },
+      buttons: [
+        { id: "claude-cli", label: "Copy CLI command", value: mcpClaudeCodeCli(baseUrl, apiKey), primary: true },
+        { id: "claude-code-json", label: "Copy .mcp.json", value: mcpClaudeCodeJson(baseUrl, apiKey), primary: false },
+      ],
+      previewLabel: "Claude Code CLI",
       preview: mcpClaudeCodeCli(baseUrl, apiKey),
-      previewLabel: "CLI (user scope)",
     },
     "claude-desktop": {
-      primary: {
-        id: "desktop-json",
-        label: "Copy Desktop JSON",
-        value: mcpClaudeDesktopJson(baseUrl, apiKey),
-      },
-      secondary: {
-        id: "desktop-env",
-        label: "Copy env",
-        value: mcpEnvBlock(baseUrl, apiKey),
-      },
-      preview: mcpClaudeDesktopJson(baseUrl, apiKey),
+      buttons: [
+        {
+          id: "desktop-json",
+          label: "Copy Desktop JSON",
+          value: mcpClaudeDesktopJson(baseUrl, apiKey),
+          primary: true,
+        },
+        { id: "desktop-env", label: "Copy env", value: mcpEnvBlock(baseUrl, apiKey), primary: false },
+      ],
       previewLabel: "claude_desktop_config.json",
+      preview: mcpClaudeDesktopJson(baseUrl, apiKey),
     },
   } as const;
 
+  const active = configs[selected];
+  const activeMeta = CLIENTS.find((c) => c.id === selected)!;
+
   return (
-    <div className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-3">
+    <div className="w-full space-y-4">
+      <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-3 md:items-stretch">
         {CLIENTS.map((c) => {
           const Icon = c.icon;
           const cfg = configs[c.id];
-          const active = open === c.id;
+          const isSelected = selected === c.id;
           return (
             <div
               key={c.id}
-              className={`flex flex-col rounded-2xl border p-4 transition ${
-                emphasize
-                  ? "border-primary/30 bg-primary/5 shadow-[0_0_20px_color-mix(in_oklab,var(--color-primary)_12%,transparent)]"
-                  : active
-                    ? "border-primary/40 bg-base-100/80"
-                    : "border-base-300/80 bg-base-100/40"
+              role="button"
+              tabIndex={0}
+              onClick={() => setSelected(c.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelected(c.id);
+                }
+              }}
+              className={`flex h-full min-h-[11.5rem] flex-col rounded-2xl border p-4 outline-none transition ${
+                isSelected
+                  ? emphasize
+                    ? "border-primary bg-base-100 ring-2 ring-primary/30"
+                    : "border-primary bg-base-100 ring-2 ring-primary/25"
+                  : "border-base-300/70 bg-base-100/70 hover:border-primary/40"
               }`}
             >
-              <button
-                type="button"
-                className="flex flex-1 flex-col items-start text-left"
-                onClick={() => setOpen(active ? null : c.id)}
-              >
-                <Icon className="mb-2 h-5 w-5 text-primary" />
-                <div className="font-display text-base font-semibold tracking-tight">{c.title}</div>
-                <div className="mt-0.5 text-xs text-base-content/55">{c.subtitle}</div>
-              </button>
-              <div className="mt-3 flex flex-col gap-2">
-                <CopyBtn
-                  id={cfg.primary.id}
-                  value={cfg.primary.value}
-                  label={cfg.primary.label}
-                  copiedKey={copiedKey}
-                  onCopy={copy}
-                  primary
-                />
-                <CopyBtn
-                  id={cfg.secondary.id}
-                  value={cfg.secondary.value}
-                  label={cfg.secondary.label}
-                  copiedKey={copiedKey}
-                  onCopy={copy}
-                />
-              </div>
-              {active && (
-                <div className="mt-3 space-y-2">
-                  <p className="text-[11px] text-base-content/55">{c.pathHint}</p>
-                  <Snippet label={cfg.previewLabel} value={cfg.preview} />
+              <div className="mb-4 flex items-start gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Icon className="h-4 w-4" />
+                </span>
+                <div className="min-w-0">
+                  <div className="font-display text-sm font-semibold tracking-tight">{c.title}</div>
+                  <div className="mt-0.5 text-xs text-base-content/55">{c.subtitle}</div>
                 </div>
-              )}
+              </div>
+
+              <div className="mt-auto flex w-full flex-col gap-2">
+                {cfg.buttons.map((b) => {
+                  const done = copiedKey === b.id;
+                  return (
+                    <button
+                      key={b.id}
+                      type="button"
+                      className={`btn btn-sm w-full justify-center gap-1.5 rounded-xl ${
+                        b.primary ? "btn-primary" : "btn-outline"
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void copy(b.id, b.value);
+                      }}
+                    >
+                      {done ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                      {done ? "Copied!" : b.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           );
         })}
       </div>
+
+      <div className="overflow-hidden rounded-2xl border border-base-300/80 bg-base-100">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-base-300/60 px-4 py-2.5">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-base-content/50">
+              {active.previewLabel}
+            </div>
+            <p className="mt-0.5 text-xs text-base-content/55">{activeMeta.pathHint}</p>
+          </div>
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs gap-1 rounded-lg"
+            onClick={() => void copy(`preview-${selected}`, active.preview)}
+          >
+            {copiedKey === `preview-${selected}` ? (
+              <Check className="h-3.5 w-3.5 text-success" />
+            ) : (
+              <Copy className="h-3.5 w-3.5" />
+            )}
+            {copiedKey === `preview-${selected}` ? "Copied" : "Copy"}
+          </button>
+        </div>
+        <pre className="max-h-56 overflow-auto p-4 font-mono text-[11px] leading-relaxed text-base-content/80">
+          <code>{active.preview}</code>
+        </pre>
+      </div>
+
       {!emphasize && apiKey === MCP_PLACEHOLDER_TOKEN && (
         <p className="text-xs text-base-content/50">
-          These snippets use a placeholder token. Create a personal token above, then use the
-          one-click buttons in the green success card (token already filled in).
+          Placeholder token in snippets. Create a personal token above for configs with your real{" "}
+          <code className="font-mono">pmk_</code> key filled in.
         </p>
       )}
     </div>
